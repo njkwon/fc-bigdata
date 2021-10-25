@@ -1,0 +1,4 @@
+# mac os 접속하기
+
+$ sudo chmod 400 njkwon-fc-seoul.pem 
+$ ssh -i "njkwon-fc-seoul.pem" ec2-user@**********.ap-northeast-1.compute.amazonaws.com
