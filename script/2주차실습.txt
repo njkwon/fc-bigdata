@@ -3,7 +3,6 @@ Execution role : arn:aws:iam::574XXX07:role/apigatewayTokinesis
 HTTP HEADER 
 Name : Content-Type	
 Mapped from : 'application/x-amz-json-1.1'
-
  
 Mapping templates 
 
