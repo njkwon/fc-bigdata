@@ -1,0 +1,16 @@
+# mac os 접속하기
+
+$ sudo chmod 400 njkwon-fc-seoul.pem 
+$ ssh -i "njkwon-fc-seoul.pem" ec2-user@**********.ap-northeast-1.compute.amazonaws.com
+
+#git 설치 
+$ sudo yum install git -y 
+
+#source 다운로드 받기 
+$ git clone -b master --single-branch https://github.com/njkwon/fc-bigdata/ 
+$ cd fc-bigdata 
+
+#s3 버킷 만들기
+$ export bucketname=fc-myclass
+$ aws s3 mb s3://$my-bucket --region ap-norteast-2
+$ aws s3 sync . s3://$my-bucket --exclude '.git/*'
