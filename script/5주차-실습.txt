@@ -108,10 +108,7 @@ wget https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.19/mysql-conn
 $ZEPPELIN_HOME/interpreter/jdbc/
 
 
-
-athena.ap-northeast-2.amazonaws.com
-s3://fc-datapipeline/sql/
-AKIAYLNFI54NRH672R3B	/98XX/HI1L7KJaIqiyiZ0C/xfWjI1Vge91EWCxVt
+ 
 
 
 Driver download 설명서
@@ -190,8 +187,8 @@ $cp producer_test.conf producer.conf
 
 input {
 s3 {
-access_key_id => "AKIAZ2PFIKG225J54RNGZW"
-secret_access_key => "Znfz9nx7WG3TtNK223ZyUEtUz5kImGn5GxF7Zhuk62"
+access_key_id => "AKIAZ2PFIKG2223125J54RNGZW"
+secret_access_key => "Znfz9nx7W222G3TtNK223ZyUEtUz5kImGn5GxF7Zhuk62"
 bucket => "fc-class"
 region => "ap-northeast-2"
 prefix => "temp/json"
