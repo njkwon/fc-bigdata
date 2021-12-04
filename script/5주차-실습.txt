@@ -1,6 +1,6 @@
 #15 presto 설정
 
-$ /usr/lib/presto/bin/presto-cli-0.227-executable --server localhost:8889 --catalog hive --schema default
+$ /usr/lib/presto/bin/presto-cli-0.227-executable --server localhost:8889 --catalog hive --schema class
 
 presto:default> show tables ;
 presto:default> select * from hive.njkwon.danji_user_view;
@@ -12,9 +12,9 @@ mysql 연동
 /etc/presto/conf/catalog/mysql.properties
 -------------------
 connector.name=mysql
-connection-url=jdbc:mysql://myclass-instance-1.cgfpdcibdeds.ap-northeast-2.rds.amazonaws.com:3306
-connection-user=admin
-connection-password=Votmxm12#
+connection-url=jdbc:mysql://myclass-xxxx.cgfpdcibdeds.ap-northeast-2.rds.amazonaws.com:3306
+connection-user=adxxx
+connection-password=Voxx12#
 -------------------
 
 
@@ -23,8 +23,12 @@ connection-password=Votmxm12#
 node-scheduler.include-coordinator=true
 ---------------------------------------
 
-접속 
+#presto 재동 
+systemctl stop presto-server 
+systemctl start presto-server 
 
+
+presto 접속 
 /usr/lib/presto/bin/presto-cli --server localhost:8889 --catalog mysql --schema dw
 
 테스트  sql 
@@ -36,7 +40,7 @@ select a.base_date,
        b.dong,
        count(*) as view_count
 from hive.class.danji_user_view_silver a 
-join danji_master b
+join mysql.dw.danji_master b
 on a.danji_id = b.id 
 group by a.base_date, 
        a.danji_id, 
@@ -50,7 +54,6 @@ group by a.base_date,
 #16 zeppelin jdbc interprinter 설치
 
 $sudo su - 
-#export JAVA_TOOL_OPTIONS="-Dzeppelin.interpreter.dep.mvnRepo=http://insecure.repo1.maven.org/maven2/"
 
 #cd /usr/lib/zeppelin
 #./bin/install-interpreter.sh --name jdbc
@@ -62,53 +65,21 @@ ps -ef|grep zeppelin
 sudo systemctl stop zeppelin
 
 
-/usr/lib/zeppelin/conf
-
-cp zeppelin-site.xml.template zeppelin-site.xml
-vi zeppelin-site.xml
-
-<property>
-  <name>zeppelin.interpreter.dep.mvnRepo</name>
-  <value>http://insecure.repo1.maven.org/maven2/</value>
-  <description>Remote principal repository for interpreter's additional dependency loading</description>
-</property>
-
-
 사용자에 의해 패치된 presto-jdbc 사용
 
-    https://github.com/gabrielrcouto/presto/releases
+https://github.com/gabrielrcouto/presto/releases
 
-    cd /home/hadoop
+cd /home/hadoop
 
-    sudo wget https://github.com/gabrielrcouto/presto/releases/download/0.225/presto-jdbc-0.225-SNAPSHOT.jar 
+sudo wget https://github.com/gabrielrcouto/presto/releases/download/0.225/presto-jdbc-0.225-SNAPSHOT.jar 
 
-    sudo chown hadoop:hadoop presto-jdbc-0.225-SNAPSHOT.jar 
-
+sudo chown hadoop:hadoop presto-jdbc-0.225-SNAPSHOT.jar 
 
 
 #19
 default.driver : com.facebook.presto.jdbc.PrestoDriver
 default.url    : jdbc:presto://localhost:8889
 default.user   : hive
-
-Dependencies
-com.facebook.presto:presto-jdbc:0.179 
-
-
-
-curl -L -O https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.19/mysql-connector-java-8.0.19.jar
-또는
-wget https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.19/mysql-connector-java-8.0.19.jar
-
-다운받아서 다음 위치에 넣어 주면 된다.
-
-(zeppelin home)/interpreter/jdbc
-
-
-$ZEPPELIN_HOME/interpreter/jdbc/
-
-
- 
 
 
 Driver download 설명서
