@@ -1,4 +1,4 @@
-#15 presto 설정
+# presto 설정
 
 $ /usr/lib/presto/bin/presto-cli-0.227-executable --server localhost:8889 --catalog hive --schema class
 
@@ -51,7 +51,7 @@ group by a.base_date,
 
 
 
-#16 zeppelin jdbc interprinter 설치
+# zeppelin jdbc interprinter 설치
 
 $sudo su - 
 
@@ -76,7 +76,7 @@ sudo wget https://github.com/gabrielrcouto/presto/releases/download/0.225/presto
 sudo chown hadoop:hadoop presto-jdbc-0.225-SNAPSHOT.jar 
 
 
-#19
+#
 default.driver : com.facebook.presto.jdbc.PrestoDriver
 default.url    : jdbc:presto://localhost:8889
 default.user   : hive
@@ -99,7 +99,7 @@ C:\Program Files\Tableau\Drivers
 
 
 
-#47
+#
 
 $ sudo yum install -y java-1.8.0-openjdk-devel.x86_64
 5.2. logstash - producer 프로그램설치  from twitter p53 
@@ -158,12 +158,13 @@ $cp producer_test.conf producer.conf
 
 input {
 s3 {
-access_key_id => "AKIAZ2PFIKG2223125J54RNGZW"
-secret_access_key => "Znfz9nx7W222G3TtNK223ZyUEtUz5kImGn5GxF7Zhuk62"
+access_key_id => "AKIAZ2PFIxxx54RNGZW"
+secret_access_key => "Znfz9nxxxZyxxxUz5kImGn5GxF7Zhuk62"
 bucket => "fc-class"
 region => "ap-northeast-2"
 prefix => "temp/json"
 
+sincedb_path => "/dev/null"
 }
 
 }
@@ -171,23 +172,20 @@ filter {
   json {
     source => "message"
   }
+  mutate { 
+    remove_field => ["@version","host","message"] 
+    }
 }
-
 output {
   elasticsearch {
-    hosts => ["https://search-data33-45bpe22e6yy4is4bnnrhisnjvbde.ap-northeast-2.es.amazonaws.com:443"]
+    hosts => ["https://sexxx-yhf2jbooskxxxwuuhvg5u.ap-northeast-2.es.amazonaws.com:443"]
     ssl => true
-    index => "data33-%{+YYYY.MM.dd}"
-    user => "data33"
-    password => "Kwonpark77~"
+    index => "class-%{+YYYY.MM.dd}"
+    user => "class"
+    password => "Votmxmzoavjtm1@"
     ilm_enabled => false
   }
 }
-
-
-
- 
-
 
 
 https://www.tableau.com/products/trial 
