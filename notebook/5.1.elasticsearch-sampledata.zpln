@@ -1,0 +1,386 @@
+﻿{
+  "paragraphs": [
+    {
+      "title": "1. Read Text File",
+      "text": "import spark.implicits._\nimport org.apache.spark.sql.Encoder\n\n val log1=spark.sparkContext.textFile(\"s3://fc-class/logs/*.gz\")",
+      "user": "anonymous",
+      "dateUpdated": "2021-12-12T08:23:03+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "import spark.implicits._\nimport org.apache.spark.sql.Encoder\n\u001b[1m\u001b[34mlog1\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.rdd.RDD[String]\u001b[0m = s3://fc-class/logs/*.gz MapPartitionsRDD[89] at textFile at <console>:53\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1639297343729_1415775434",
+      "id": "20181003-085420_122542733",
+      "dateCreated": "2021-12-12T08:22:23+0000",
+      "dateStarted": "2021-12-12T08:23:03+0000",
+      "dateFinished": "2021-12-12T08:23:04+0000",
+      "status": "FINISHED",
+      "focus": true,
+      "$$hashKey": "object:3124"
+    },
+    {
+      "title": "2.log 파일 내용 확인",
+      "text": "log1.take(10).foreach(println)",
+      "user": "anonymous",
+      "dateUpdated": "2021-12-12T08:22:23+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1639297343730_367904329",
+      "id": "20181003-090735_345589154",
+      "dateCreated": "2021-12-12T08:22:23+0000",
+      "status": "READY",
+      "$$hashKey": "object:3125"
+    },
+    {
+      "title": "3. Line Parser 생성",
+      "text": "import org.json4s._\nimport org.json4s.jackson.JsonMethods._\nimport org.json4s.JsonDSL._\n\ncase class Cflog(base_date: String, adid: String, uuid: String,name: String, timestamp: String, gtmTimes: String, screen_name: String\n                , item_id: String, content_type: String, item_category: String, is_zb_agent: String, building_id: String, area_type_id: String\n                , agent_id: String, status: String , button_name: String) \n\ndef parseRawJson(line: String) = {\n     val pieces = line.split(\"\\\\|\") \n     \n     val adid = pieces.apply(1).toString\n     val uuid = pieces.apply(2).toString\n     val name = pieces.apply(3).toString\n     val timestamp = pieces.apply(8).toString\n     val gtmTimes =pieces.apply(7).toString  \n    //JSON Parse\n    val jsonString = pieces.apply(9).toString\n    implicit val formats = DefaultFormats\n    val result = parse(jsonString)\n\n    var screen_name      = (result \\ \"screen_name\").extractOpt[String].getOrElse(\"NULL\").replaceAll(\"nil\", \"NULL\")\n    var item_id           = (result \\ \"item_id\").extractOpt[String].getOrElse(\"NULL\").replaceAll(\"nil\", \"NULL\")\n    val\tcontent_type     = (result \\ \"content_type\").extractOpt[String].getOrElse(\"NULL\").replaceAll(\"nil\", \"NULL\")\n    val\titem_category    = (result \\ \"item_category\").extractOpt[String].getOrElse(\"NULL\").replaceAll(\"nil\", \"NULL\")\n    val\tis_zb_agent      = (result \\ \"is_zb_agent\").extractOpt[String].getOrElse(\"NULL\").replaceAll(\"nil\", \"NULL\")\n    val\tbuilding_id      = (result \\ \"building_id\").extractOpt[String].getOrElse(\"NULL\").replaceAll(\"nil\", \"NULL\")\n    val\tarea_type_id     = (result \\ \"area_type_id\").extractOpt[String].getOrElse(\"NULL\").replaceAll(\"nil\", \"NULL\")\n    val\tagent_id         = (result \\ \"agent_id\").extractOpt[String].getOrElse(\"NULL\").replaceAll(\"nil\", \"NULL\")\n    val\tbutton_name         = (result \\ \"button_name\").extractOpt[String].getOrElse(\"NULL\").replaceAll(\"nil\", \"NULL\")\n    val status  = (result \\ \"status\").extractOpt[String].getOrElse(\"NULL\").replaceAll(\"nil\", \"NULL\")\n    val base_date = timestamp.substring(0,10)\n    \n    \n    Cflog(base_date, adid, uuid, name, timestamp, gtmTimes, screen_name, item_id, content_type, item_category, is_zb_agent, building_id, area_type_id, agent_id, status , button_name)\n}",
+      "user": "anonymous",
+      "dateUpdated": "2021-12-12T08:23:27+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "import org.json4s._\nimport org.json4s.jackson.JsonMethods._\nimport org.json4s.JsonDSL._\ndefined class Cflog\n\u001b[1m\u001b[34mparseRawJson\u001b[0m: \u001b[1m\u001b[32m(line: String)Cflog\u001b[0m\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1639297343730_1044004730",
+      "id": "20181003-090705_731341499",
+      "dateCreated": "2021-12-12T08:22:23+0000",
+      "dateStarted": "2021-12-12T08:23:27+0000",
+      "dateFinished": "2021-12-12T08:23:28+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:3126"
+    },
+    {
+      "title": "4. 비정형데이터 -> DataFrame",
+      "text": "val logsDFAll = log1.map(line => parseRawJson(line)).toDF()\nlogsDFAll.createOrReplaceTempView(\"logs\")\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-12-12T08:23:44+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "\u001b[1m\u001b[34mlogsDFAll\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m = [base_date: string, adid: string ... 14 more fields]\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1639297343730_824430143",
+      "id": "20181003-105118_1923466297",
+      "dateCreated": "2021-12-12T08:22:23+0000",
+      "dateStarted": "2021-12-12T08:23:44+0000",
+      "dateFinished": "2021-12-12T08:23:45+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:3127"
+    },
+    {
+      "text": "logsDFAll.printSchema",
+      "user": "anonymous",
+      "dateUpdated": "2021-12-12T08:24:08+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "root\n |-- base_date: string (nullable = true)\n |-- adid: string (nullable = true)\n |-- uuid: string (nullable = true)\n |-- name: string (nullable = true)\n |-- timestamp: string (nullable = true)\n |-- gtmTimes: string (nullable = true)\n |-- screen_name: string (nullable = true)\n |-- item_id: string (nullable = true)\n |-- content_type: string (nullable = true)\n |-- item_category: string (nullable = true)\n |-- is_zb_agent: string (nullable = true)\n |-- building_id: string (nullable = true)\n |-- area_type_id: string (nullable = true)\n |-- agent_id: string (nullable = true)\n |-- status: string (nullable = true)\n |-- button_name: string (nullable = true)\n\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1639297439453_1956288609",
+      "id": "paragraph_1639297439453_1956288609",
+      "dateCreated": "2021-12-12T08:23:59+0000",
+      "dateStarted": "2021-12-12T08:24:08+0000",
+      "dateFinished": "2021-12-12T08:24:09+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:3128"
+    },
+    {
+      "title": "5. Spark SQL",
+      "text": "%sql\n\nselect   add_months(base_date,47) as base_date  ,\n  adid ,\n  uuid ,\n  name ,\n  to_timestamp(add_months(timestamp, 47)||substring(timestamp,11,8))  as base_dt,\n  gtmTimes ,\n  screen_name ,\n  item_id ,\n  content_type ,\n  item_category ,\n  is_zb_agent ,\n  building_id ,\n  area_type_id ,\n  agent_id ,\n  status ,\n  button_name\nfrom logs",
+      "user": "anonymous",
+      "dateUpdated": "2021-12-12T08:26:43+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/sql",
+        "fontSize": 9,
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "base_date": "string",
+                      "adid": "string",
+                      "uuid": "string",
+                      "name": "string",
+                      "base_dt": "string",
+                      "gtmTimes": "string",
+                      "screen_name": "string",
+                      "item_id": "string",
+                      "content_type": "string",
+                      "item_category": "string",
+                      "is_zb_agent": "string",
+                      "building_id": "string",
+                      "area_type_id": "string",
+                      "agent_id": "string",
+                      "status": "string",
+                      "button_name": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        },
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1639297343730_1939339875",
+      "id": "20181003-105334_1651986733",
+      "dateCreated": "2021-12-12T08:22:23+0000",
+      "dateStarted": "2021-12-12T08:26:35+0000",
+      "dateFinished": "2021-12-12T08:26:42+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:3129"
+    },
+    {
+      "text": "spark.sql(\"\"\" select   add_months(base_date,47) as base_date  ,\n  adid ,\n  uuid ,\n  name ,\n  to_timestamp(add_months(timestamp, 47)||substring(timestamp,11,8))  as base_dt,\n  gtmTimes ,\n  screen_name ,\n  item_id ,\n  content_type ,\n  item_category ,\n  is_zb_agent ,\n  building_id ,\n  area_type_id ,\n  agent_id ,\n  status ,\n  button_name\nfrom logs \"\"\").write.mode(\"overwrite\").json(\"s3://fc-class/temp/json/\")",
+      "user": "anonymous",
+      "dateUpdated": "2021-12-12T08:28:52+0000",
+      "progress": 97,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://ip-172-31-16-32.ap-northeast-2.compute.internal:4040/jobs/job?id=24",
+              "$$hashKey": "object:3743"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1639297647480_1430268427",
+      "id": "paragraph_1639297647480_1430268427",
+      "dateCreated": "2021-12-12T08:27:27+0000",
+      "dateStarted": "2021-12-12T08:28:52+0000",
+      "dateFinished": "2021-12-12T08:29:51+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:3130"
+    },
+    {
+      "text": "",
+      "user": "anonymous",
+      "dateUpdated": "2021-12-12T08:27:25+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1639297343730_419575728",
+      "id": "20181003-105546_2126516718",
+      "dateCreated": "2021-12-12T08:22:23+0000",
+      "status": "READY",
+      "$$hashKey": "object:3131"
+    }
+  ],
+  "name": "elasticsearch-sampledata",
+  "id": "2GS1ZD1SF",
+  "defaultInterpreterGroup": "spark",
+  "version": "0.9.0",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {},
+  "config": {
+    "isZeppelinNotebookCronEnable": false,
+    "looknfeel": "default",
+    "personalizedMode": "false"
+  },
+  "info": {},
+  "path": "/elasticsearch-sampledata"
+}
