@@ -57,8 +57,6 @@ $sudo su -
 
 #cd /usr/lib/zeppelin
 #./bin/install-interpreter.sh --name jdbc
-#./bin/zeppelin-daemon.sh stop (수회 수행)
-#./bin/zeppelin-daemon.sh start
 
 sudo systemctl stop zeppelin
 ps -ef|grep zeppelin 
