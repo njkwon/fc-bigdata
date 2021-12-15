@@ -1,22 +1,20 @@
-p43
-
-CREATE EXTERNAL TABLE  [사용자ID]_athe_danji_user_view
+CREATE EXTERNAL TABLE  danji_user_view_silver
 (
   base_dt timestamp, 
-  danji_id int
+  danji_id int, 
+  adid string
 )
 PARTITIONED BY ( 
   base_date date )
 STORED AS PARQUET
-LOCATION 's3://fc-datapipeline/hive/dp1_athe_danji_user_view'
+LOCATION 's3://fc-bigdata/silver/danji_user_view_silver'
 tblproperties ("parquet.compress"="SNAPPY" ,"classification"="parquet")
 ;
 
 
-p53
-[hadoop@ip-172-31-20-91 ~]$ cd /usr/lib/zeppelin/conf
-[hadoop@ip-172-31-20-91 conf]$ sudo cp zeppelin-site.xml.template zeppelin-site.xml
-[hadoop@ip-172-31-20-91 conf]$ sudo vi zeppelin-site.xml
+[hadoop@ip-172-20-91 ~]$ cd /usr/lib/zeppelin/conf
+[hadoop@ip-172-20-91 conf]$ sudo cp zeppelin-site.xml.template zeppelin-site.xml
+[hadoop@ip-172-20-91 conf]$ sudo vi zeppelin-site.xml
 
 <property>
   <name>zeppelin.notebook.cron.enable</name>
@@ -24,7 +22,8 @@ p53
   <description>Notebook enable cron scheduler feature</description>
 </property>
 
-[hadoop@ip-172-31-20-xx bin]$ sudo ./zeppelin-daemon.sh stop
-[hadoop@ip-172-31-20-xx bin]$ sudo ./zeppelin-daemon.sh start
+# sudo systemctl stop zeppelin
+# ps -ef|grep zeppelin 
+# sudo systemctl stop zeppelin
 
 

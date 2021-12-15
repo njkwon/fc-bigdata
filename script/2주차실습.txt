@@ -27,7 +27,7 @@ Post json
 curl -d "{\"value\":\"30\",\"type\":\"Tip 3\"}" -H "Content-Type: application/json" -X POST https://z8lp2g97el.execute-api.ap-northeast-2.amazonaws.com/PROD/v1
 
  
- 
+# shell 에서 shard의 값을 확인할 수 있다. 
 SHARD_ITERATOR=$(aws kinesis get-shard-iterator --shard-id shardId-000000000000 --shard-iterator-type TRIM_HORIZON --stream-name class-data --query 'ShardIterator')
 
 aws kinesis get-records --shard-iterator $SHARD_ITERATOR
