@@ -88,7 +88,7 @@ Download site
 https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html
 
 Mac : 
-$cd /Users/njkwon/Library/Tableau/Drivers
+$cd ~/Library/Tableau/Drivers
 $cp ~/Downloads/AthenaJDBC42.jar .
 
 Window : 
