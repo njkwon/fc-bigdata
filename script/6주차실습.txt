@@ -34,38 +34,12 @@ emr steps :
 s3://ap-northeast-2.elasticmapreduce/libs/script-runner/script-runner.jar
 s3://fc-class/shell/mysql-driver.sh
 
-mysql 접속정보 
-myclass-instance-1.cgfpdcibdeds.ap-northeast-2.rds.amazonaws.com
-id : admin 
-password : Votmxm12#
-
-
-------
-from pyspark.sql import SparkSession
-
-spark = SparkSession \
-    .builder \
-    .appName("Python Spark SQL basic example") \
-    .getOrCreate()
-
-jdbcHostname = "zbinfo-d-1.d-d.ap-northeast-1.rds.amazonaws.com"
-jdbcDatabase = "spark"
-username="data"
-password="sparkdatapipe"
-jdbcPort = 3306
-jdbcUrl = "jdbc:mysql://{0}:{1}/{2}?user={3}&password={4}?characterEncoding=UTF-8".format(jdbcHostname, jdbcPort, jdbcDatabase, username, password)
-
-sql="(select * from spark.apart_dau limit 10) a"
-jdbcDF = spark.read.format("jdbc").option("driver","com.mysql.jdbc.Driver" ).option("url", jdbcUrl).option("dbtable", sql).option("user", username).option("password", password).load()
-
-jdbcDF.show()
-
 3. Redshift spectrum
 
 --------------------------------------------------------
 create external schema red_class from data catalog 
 database 'class' 
-iam_role 'arn:aws:iam::67532222402:role/redspectrum' 
+iam_role 'arn:aws:iam::675327529402:role/classpectrum' 
 region 'ap-northeast-2';
 --------------------------------------------------------
 
