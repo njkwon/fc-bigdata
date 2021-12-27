@@ -5,6 +5,17 @@
 ## 목적 : 
 클라우드에서 데이터 분석환경을 가격 효율적으로 구축하기 위한 기초 교육
  
+# 알면 좋은 것들
+* Spark 
+* Scala 언어
+* AWS 환경
+
+## 이해 했다면 더 했으면 하는것들
+* Docker
+* Kubernetes
+* IaC (infrastructure of code) 개발 : 인프라를 코딩으로 하기 
+* Airflow - Scheduler 
+ 
 ## Repository 구조
 ```
 - logs : 실습을 위한 App log 데이터
