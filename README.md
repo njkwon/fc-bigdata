@@ -13,7 +13,7 @@
 ## 이해 했다면 더 했으면 하는것들
 * Docker
 * Kubernetes
-* IaC (infrastructure of code) 개발 : 인프라를 코딩으로 하기 
+* IaC (infrastructure as code) 개발 : 인프라를 코딩으로 하기 
 * 분석가가 어떻게 하면 손쉽게 분석할 수 있을까? 에 대한 고민
 * Airflow - Scheduler 
  
