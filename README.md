@@ -1,3 +1,20 @@
-클라우드를 활용한 데이터 파이프라인 구축에 필요한 소스코드와 샘플데이터가 있습니다. 
+# 클라우드를 활용한 데이터 파이프라인 구축  
 
-샘플데이터는 앱에서 발생된 이벤트 데이터 입니다. 
+: [클라우드를 활용한 데이터 파이프라인 구축](https://fastcampus.co.kr/data_online_pipeline) 강의 자료
+
+## 목적 : 
+클라우드에서 데이터 분석환경을 가격 효율적으로 구축하기 위한 기초 교육
+ 
+## Repository 구조
+```
+- logs : 실습을 위한 App log 데이터
+- notebook : Spark 실습용 notebook 
+- ods  : Operation Data Store 로 운영(OLTP)에서 사용하는 상품 Master DB Table 
+- script : 실습을 위한 shell script 
+- shell  : EMR 자동화를 위한 shell
+- test   : Api Gateway 실습을 위한 Test 프로그램 (Java 로 짜여 있고 Jar형태로 제공됨 
+```
+
+## 강이가 아니더라도 클라우드에서 데이터 관련된 내용 질의 응답은 아래 게시판에서 
+
+[Q/A](https://fastcampus.co.kr/qna/206742) 문의하기
