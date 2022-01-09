@@ -1,0 +1,358 @@
+﻿{
+  "paragraphs": [
+    {
+      "title": "1. Redshift 초기화",
+      "text": "import java.sql.Connection\nimport java.sql.Statement\nimport java.sql.DriverManager\n\n\nval urlR = \"jdbc:redshift://class.cu8uq3pyrawn.ap-northeast-2.redshift.amazonaws.com:5439/dev\"\nval userR: String =\"awsuser\"\nval passR: String=\"Awsbigdata1!\" \n \n \nval propR = new java.util.Properties\npropR.setProperty(\"driver\", \"com.amazon.redshift.jdbc.Driver\")\npropR.setProperty(\"user\", userR)\npropR.setProperty(\"password\",passR) \n\n",
+      "user": "anonymous",
+      "dateUpdated": "2022-01-08T07:10:39+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1641622811659_1046500530",
+      "id": "20181003-142451_1135253690",
+      "dateCreated": "2022-01-08T06:20:11+0000",
+      "dateStarted": "2022-01-08T07:10:39+0000",
+      "dateFinished": "2022-01-08T07:11:00+0000",
+      "status": "FINISHED",
+      "focus": true,
+      "$$hashKey": "object:210"
+    },
+    {
+      "title": "2. Mysql Master Data Read",
+      "text": "import java.sql.Connection\nimport java.sql.Statement\nimport java.sql.DriverManager\n\nval url = \"jdbc:mysql://myclass-instance-1.cgfpdcibdeds.ap-northeast-2.rds.amazonaws.com:3306/dm?characterEncoding=UTF-8\"\nval user: String =\"admin\"\nval pass: String=\"Votmxm12#\" \n \n \nval prop = new java.util.Properties\nprop.setProperty(\"driver\", \"com.mysql.jdbc.Driver\")\nprop.setProperty(\"user\", user)\nprop.setProperty(\"password\",pass) \n \n val danjiMasterQuery = \"\"\"(\n        select id,\n               danji_name, \n               sido, \n               sigungu,\n               dong \n        from dw.danji_master\n\n ) a\"\"\"\n \n  val danjiMasterDF = spark.read.format(\"jdbc\").option(\"url\",url).option(\"dbtable\", danjiMasterQuery).option(\"user\", user).option(\"password\", pass).option(\"useUnicode\", \"true\").option(\"characterEncoding\",\"utf8\").load()\n\n\ndanjiMasterDF.createOrReplaceTempView(\"danji_master\")\nsqlContext.cacheTable(\"danji_master\")",
+      "user": "anonymous",
+      "dateUpdated": "2022-01-08T07:10:41+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1641622811659_1026032455",
+      "id": "paragraph_1641544224820_1446703082",
+      "dateCreated": "2022-01-08T06:20:11+0000",
+      "dateStarted": "2022-01-08T07:10:42+0000",
+      "dateFinished": "2022-01-08T07:11:04+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:211"
+    },
+    {
+      "title": "3. 지역별 단지 조회수 - Gold Data 생성",
+      "text": "%sql\nselect a.base_date, \n       a.danji_id, \n       b.danji_name,\n       b.sido,\n       b.sigungu,\n       b.dong,\n       count(*) as view_count\nfrom class.danji_user_view_silver a \njoin danji_master b\non a.danji_id = b.id \ngroup by a.base_date, \n       a.danji_id, \n       b.danji_name,\n       b.sido,\n       b.sigungu,\n       b.dong",
+      "user": "anonymous",
+      "dateUpdated": "2022-01-08T07:10:45+0000",
+      "progress": 15,
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/sql",
+        "fontSize": 9,
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "base_date": "string",
+                      "danji_id": "string",
+                      "danji_name": "string",
+                      "sido": "string",
+                      "sigungu": "string",
+                      "dong": "string",
+                      "view_count": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          },
+          "1": {
+            "graph": {
+              "mode": "table",
+              "height": 300,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "base_date": "string",
+                      "danji_id": "string",
+                      "danji_name": "string",
+                      "sido": "string",
+                      "sigungu": "string",
+                      "dong": "string",
+                      "view_count": "string"
+                    },
+                    "updated": true
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        },
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1641622811659_992826586",
+      "id": "paragraph_1641542327464_1841417087",
+      "dateCreated": "2022-01-08T06:20:11+0000",
+      "dateStarted": "2022-01-08T07:11:01+0000",
+      "dateFinished": "2022-01-08T07:11:15+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:212"
+    },
+    {
+      "title": "4. DataFrame 생성",
+      "text": "val localDanjiCountDF = sqlContext.sql(s\"\"\"\n\nselect a.base_date, \n       a.danji_id, \n       b.danji_name,\n       b.sido,\n       b.sigungu,\n       b.dong,\n       count(*) as view_count\nfrom class.danji_user_view_silver a \njoin danji_master b\non a.danji_id = b.id \ngroup by a.base_date, \n       a.danji_id, \n       b.danji_name,\n       b.sido,\n       b.sigungu,\n       b.dong\n\n\"\"\")\n\n",
+      "user": "anonymous",
+      "dateUpdated": "2022-01-08T07:10:48+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1641622811659_804249907",
+      "id": "paragraph_1641541993719_59801602",
+      "dateCreated": "2022-01-08T06:20:11+0000",
+      "dateStarted": "2022-01-08T07:11:04+0000",
+      "dateFinished": "2022-01-08T07:11:16+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:213"
+    },
+    {
+      "title": "5. Redshift Write Table",
+      "text": "\nval tableName = \"dm.danji_user_view_summary_gold\"\n localDanjiCountDF.write.mode(\"overwrite\").jdbc(urlR, tableName, propR)\n//localDanjiCountDF.write.mode(\"append\").jdbc(urlR, \"redshift_table\", propR)",
+      "user": "anonymous",
+      "dateUpdated": "2022-01-08T07:12:22+0000",
+      "progress": 99,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1641622811659_975772772",
+      "id": "20190214-064247_1956537631",
+      "dateCreated": "2022-01-08T06:20:11+0000",
+      "dateStarted": "2022-01-08T07:12:22+0000",
+      "dateFinished": "2022-01-08T07:13:04+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:214"
+    },
+    {
+      "title": "4. read table from redshift",
+      "text": "\n val readTableQuery = \"\"\"(\n        select  *\n        from dm.danji_user_view_summary_gold\n ) a\"\"\"\n \n  val readTableDF = spark.read.format(\"jdbc\").\n option(\"url\",url).\n option(\"dbtable\", readTableQuery).\n option(\"user\",user).\n option(\"password\",pass).\n option(\"useUnicode\", \"true\").\n option(\"characterEncoding\",\"utf8\").\n load()\n \n\n ",
+      "user": "anonymous",
+      "dateUpdated": "2022-01-08T06:40:32+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1641622811659_1533990647",
+      "id": "20181003-085444_189274594",
+      "dateCreated": "2022-01-08T06:20:11+0000",
+      "dateStarted": "2022-01-08T06:40:32+0000",
+      "dateFinished": "2022-01-08T06:40:32+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:215"
+    },
+    {
+      "text": "readTableDF.show",
+      "user": "anonymous",
+      "dateUpdated": "2022-01-08T06:40:35+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1641622811659_1976125159",
+      "id": "20190216-071637_1897821315",
+      "dateCreated": "2022-01-08T06:20:11+0000",
+      "dateStarted": "2022-01-08T06:40:35+0000",
+      "dateFinished": "2022-01-08T06:40:35+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:216"
+    },
+    {
+      "user": "anonymous",
+      "progress": 0,
+      "config": {
+        "colWidth": 12,
+        "fontSize": 9,
+        "enabled": true,
+        "results": {},
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "editorMode": "ace/mode/scala"
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1641623585208_1735960263",
+      "id": "paragraph_1641623585208_1735960263",
+      "dateCreated": "2022-01-08T06:33:05+0000",
+      "status": "READY",
+      "$$hashKey": "object:218"
+    }
+  ],
+  "name": "6-2.EMR-redshift",
+  "id": "2GUTXGTB1",
+  "defaultInterpreterGroup": "spark",
+  "version": "0.9.0",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {},
+  "config": {
+    "isZeppelinNotebookCronEnable": false,
+    "looknfeel": "default",
+    "personalizedMode": "false"
+  },
+  "info": {},
+  "path": "/6-2.EMR-redshift"
+}
