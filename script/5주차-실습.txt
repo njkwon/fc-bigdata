@@ -53,7 +53,10 @@ group by a.base_date,
 
 # zeppelin jdbc interprinter 설치
 
+# zeppelin jdbc interprinter 설치
+
 $sudo su - 
+#export JAVA_TOOL_OPTIONS="-Dzeppelin.interpreter.dep.mvnRepo=http://insecure.repo1.maven.org/maven2/"
 
 #cd /usr/lib/zeppelin
 #./bin/install-interpreter.sh --name jdbc
