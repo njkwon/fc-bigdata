@@ -116,10 +116,10 @@ $ vi producer_test.conf
 input {
 
 twitter {
-consumer_key => "KoxofBvIwdM9zz2JJ9vxg"
-consumer_secret => "kKBOnftLZ6htxvddgmZkzsii17ZeexCIgpIHNoWtE"
-oauth_token => "81761998-2Vu19ZxxFwEyik7XZ4ubG9mIj91wHdbIXdP08fId4"
-oauth_token_secret => "0E6eh4X0eum4NU81LXIKn6MMgH5TAWteL7asT8JxTo"
+consumer_key => "KoxofBvIwdM9xxxxvxg"
+consumer_secret => "kKBOnftLZ6htxvddgmZkzsixxxgpIHNoWtE"
+oauth_token => "81761998-2Vu19ZxxFwEyik7XZ4ubxxxbIXdP08fId4"
+oauth_token_secret => "0E6eh4X0eum4NU81LXIKn6xxx7asT8JxTo"
 keywords => ["news","game","bigdata","부동산"]
 full_tweet => true
 }
@@ -144,10 +144,10 @@ $ vi producer.conf
 input {
 
 twitter {
-consumer_key => "KoxofBvIwdM9zz2JJ9vxg"
-consumer_secret => "kKBOnftLZ6htxvddgmZkzsii17ZeexCIgpIHNoWtE"
-oauth_token => "81761998-2Vu19ZxxFwEyik7XZ4ubG9mIj91wHdbIXdP08fId4"
-oauth_token_secret => "0E6eh4X0eum4NU81LXIKn6MMgH5TAWteL7asT8JxTo"
+consumer_key => "KoxofBvIwdMxxvxg"
+consumer_secret => "kKBOnftLZ6htxvddgmZkzsxxIHNoWtE"
+oauth_token => "81761998-2Vu19ZxxFwEyik7XZ4ubG9mxxXdP08fId4"
+oauth_token_secret => "0E6eh4X0eum4NU81LXIKn6MMgxxJxTo"
 keywords => ["news","game","bigdata","AI"]
 full_tweet => true
 }
