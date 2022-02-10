@@ -12,5 +12,5 @@ $ cd fc-bigdata
 
 #s3 버킷 만들기
 $ export bucketname=fc-myclass
-$ aws s3 mb s3://$my-bucket --region ap-norteast-2
-$ aws s3 sync . s3://$my-bucket --exclude '.git/*'
+$ aws s3 mb s3://$bucketname --region ap-norteast-2
+$ aws s3 sync . s3://$bucketname --exclude '.git/*'
