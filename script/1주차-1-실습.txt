@@ -1,0 +1,64 @@
+
+
+# 현재 logstash 에서 twitter 값을 불러오지 못해서 python 으로 처리 할  수 있게 임시로 script 를 변경했습니다.
+
+$ pip3 install tweepy
+
+# 파이썬 프그램으로 tweeter 자료를 가져오는 기능을 확인한다.
+$ python3 tweeter.py 
+
+# 현는 강사 twitter key 값이 python 소스 코드에 들어 있다.
+# tweeter.py 에 개인 Twitter key 값들을 넣어준다.
+# 강사 twitter key 값이 노출되면 key 값이 막힐수있습니다. 
+
+$ logstash --version
+
+$ vi tweeter_test.conf 
+
+input {
+exec {
+    # tweeter.py 파일이 위한 곳으로 수정필요
+command => 'python3 /home/ec2-user/tweeter.py'
+interval => 10
+
+}
+}
+
+
+output {
+stdout {
+codec => rubydebug
+}
+}
+
+ 
+#실행한다.  - 화면에 twitter 정보가 print out 되는것을 확인한다. 
+$ logstash -f tweeter_test.conf
+
+p57 
+# twitter 정보를 kafka topic twitter에 보낸다. 
+# 확인 방법 : kafka server에 consumer console에 twitter 정보가 나오는것을 확인한다.
+# ip정보는 kafka private ip address 
+
+$ cp tweeter_test.conf tweeter.conf 
+$ vi tweeter.conf
+
+input {
+exec {
+command => 'python3 /home/ec2-user/tweeter.py'
+interval => 10
+
+}
+}
+
+output {
+kafka {
+bootstrap_servers => "172.31.15.105:9092"
+codec => json{}
+acks => "1"
+topic_id => "twitter"
+}
+}
+
+
+$ logstash -f tweeter.conf
