@@ -24,8 +24,8 @@ echo  "<html><h1> <br> <br> <center> 클라우드를 활용한 데이터파이�
 3. java 설치 
 3.1. java 가 설치되어 있지 않을 경우
 $ java –version
-$ sudo yum install java-11-amazon-corretto-headless
-$ sudo yum install java-11-amazon-corretto
+$ sudo yum install -y java-11-amazon-corretto-headless
+$ sudo yum install -y java-11-amazon-corretto
 $ java –version
 
  
@@ -75,7 +75,8 @@ $ ./bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic twit
 
 5.1. kafka client 설치 및 producer 실행 
 # java 설치
-$ sudo yum install -y java-1.8.0-openjdk-devel.x86_64
+$ sudo yum install -y java-11-amazon-corretto-headless
+$ sudo yum install -y java-11-amazon-corretto
 $ java –version
 
 # kafka  설치
