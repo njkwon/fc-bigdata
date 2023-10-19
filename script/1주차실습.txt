@@ -38,13 +38,13 @@ yum install -y java-1.8.0-openjdk-devel.x86_64
 4. EC2에 kafka Server설치  
 
 4.1. Download & Unzip
-$ wget https://dlcdn.apache.org/kafka/3.0.0/kafka_2.13-3.0.0.tgz
-$ tar xvf kafka_2.13-3.0.0.tgz 
+$ wget https://downloads.apache.org/kafka/3.6.0/kafka_2.13-3.6.0.tgz
+$ tar xvf kafka_2.13-3.6.0.tgz
 
 4.2. START THE KAFKA ENVIRONMENT  
 
 # Start the Kafka broker service 
-$ln -s kafka_2.13-3.0.0 kafka  (키보드에서 직접 넣어준다.)
+$ln -s kafka_2.13-3.6.0 kafka  (키보드에서 직접 넣어준다.)
 $cd kafka
 
 $ ./bin/zookeeper-server-start.sh config/zookeeper.properties & 
