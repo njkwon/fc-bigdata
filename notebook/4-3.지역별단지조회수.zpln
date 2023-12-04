@@ -1,0 +1,449 @@
+﻿{
+  "paragraphs": [
+    {
+      "title": "1. RDS 단지master 읽어 오기",
+      "text": "import java.sql.Connection\nimport java.sql.Statement\nimport java.sql.DriverManager\n\nval url = \"jdbc:mysql://myclass-instance-1.xxxx.ap-northeast-2.rds.amazonaws.com:3306/dm?characterEncoding=UTF-8\"\nval user: String =\"admin\"\nval pass: String=\"xxx12#\" \n \n \nval prop = new java.util.Properties\nprop.setProperty(\"driver\", \"com.mysql.jdbc.Driver\")\nprop.setProperty(\"user\", user)\nprop.setProperty(\"password\",pass) \n \n val danjiMasterQuery = \"\"\"(\n        select id,\n               danji_name, \n               sido, \n               sigungu,\n               dong \n        from dw.danji_master\n\n ) a\"\"\"\n \n  val danjiMasterDF = spark.read.format(\"jdbc\").option(\"url\",url).option(\"dbtable\", danjiMasterQuery).option(\"user\", user).option(\"password\", pass).option(\"useUnicode\", \"true\").option(\"characterEncoding\",\"utf8\").load()\n\n\ndanjiMasterDF.createOrReplaceTempView(\"danji_master\")\nsqlContext.cacheTable(\"danji_master\")",
+      "user": "anonymous",
+      "dateUpdated": "2021-12-01T17:03:21+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1638191884544_593732434",
+      "id": "20181010-131003_1236523071",
+      "dateCreated": "2021-11-29T13:18:04+0000",
+      "dateStarted": "2021-11-29T13:20:47+0000",
+      "dateFinished": "2021-11-29T13:20:48+0000",
+      "status": "FINISHED",
+      "focus": true,
+      "$$hashKey": "object:30918"
+    },
+    {
+      "text": "%sql\nselect *\nfrom danji_master",
+      "user": "anonymous",
+      "dateUpdated": "2021-11-29T13:22:00+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/sql",
+        "fontSize": 9,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "id": "string",
+                      "danji_name": "string",
+                      "sido": "string",
+                      "sigungu": "string",
+                      "dong": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        },
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1638192101093_866954859",
+      "id": "paragraph_1638192101093_866954859",
+      "dateCreated": "2021-11-29T13:21:41+0000",
+      "dateStarted": "2021-11-29T13:21:59+0000",
+      "dateFinished": "2021-11-29T13:21:59+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:30919"
+    },
+    {
+      "title": "2. spark 스키마에 있는 테이블 확인한다.",
+      "text": "%sql\nshow tables from class",
+      "user": "anonymous",
+      "dateUpdated": "2021-11-29T13:22:30+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/sql",
+        "fontSize": 9,
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "database": "string",
+                      "tableName": "string",
+                      "isTemporary": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        },
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1638191884544_1758153902",
+      "id": "20181010-131714_965893710",
+      "dateCreated": "2021-11-29T13:18:04+0000",
+      "dateStarted": "2021-11-29T13:22:30+0000",
+      "dateFinished": "2021-11-29T13:22:30+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:30920"
+    },
+    {
+      "title": "3. Glue에 정의 되어 있는 테이블 테이블확인",
+      "text": "%sql\ndesc class.danji_user_view_silver",
+      "user": "anonymous",
+      "dateUpdated": "2021-11-29T13:23:05+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/sql",
+        "fontSize": 9,
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "col_name": "string",
+                      "data_type": "string",
+                      "comment": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        },
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1638191884544_345378127",
+      "id": "20181010-131758_996378101",
+      "dateCreated": "2021-11-29T13:18:04+0000",
+      "dateStarted": "2021-11-29T13:23:05+0000",
+      "dateFinished": "2021-11-29T13:23:05+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:30921"
+    },
+    {
+      "title": "4. danji_master 테이블확인",
+      "text": "%sql\ndesc danji_master\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-11-29T13:23:37+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/sql",
+        "fontSize": 9,
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "col_name": "string",
+                      "data_type": "string",
+                      "comment": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        },
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1638191884544_1743207767",
+      "id": "20181010-132142_687104021",
+      "dateCreated": "2021-11-29T13:18:04+0000",
+      "dateStarted": "2021-11-29T13:23:36+0000",
+      "dateFinished": "2021-11-29T13:23:36+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:30922"
+    },
+    {
+      "title": "5. Glue에 정의 된 테이블과 RDS master 테이블 Join",
+      "text": "%sql\nselect a.base_date, \n       a.danji_id, \n       b.danji_name,\n       b.sido,\n       b.sigungu,\n       b.dong,\n       count(*) as view_count\nfrom class.danji_user_view_silver a \njoin danji_master b\non a.danji_id = b.id \ngroup by a.base_date, \n       a.danji_id, \n       b.danji_name,\n       b.sido,\n       b.sigungu,\n       b.dong\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-11-29T13:24:14+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/sql",
+        "editorHide": false,
+        "fontSize": 9,
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "base_date": "string",
+                      "danji_id": "string",
+                      "danji_name": "string",
+                      "sido": "string",
+                      "sigungu": "string",
+                      "dong": "string",
+                      "view_count": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        },
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1638191884545_912874292",
+      "id": "20181010-131010_1970714607",
+      "dateCreated": "2021-11-29T13:18:04+0000",
+      "dateStarted": "2021-11-29T13:24:14+0000",
+      "dateFinished": "2021-11-29T13:24:17+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:30923"
+    },
+    {
+      "title": "6. RDS 저장한다.",
+      "text": "val localDanjiCountDF = sqlContext.sql(s\"\"\"\n\nselect a.base_date, \n       a.danji_id, \n       b.danji_name,\n       b.sido,\n       b.sigungu,\n       b.dong,\n       count(*) as view_count\nfrom class.danji_user_view_silver a \njoin danji_master b\non a.danji_id = b.id \ngroup by a.base_date, \n       a.danji_id, \n       b.danji_name,\n       b.sido,\n       b.sigungu,\n       b.dong\n\n\"\"\")\n\nval tableName = \"dm.danji_user_view_summary_gold\"\nlocalDanjiCountDF.write.mode(\"append\").jdbc(url, tableName, prop)\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-11-29T13:28:01+0000",
+      "progress": 62,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1638191884545_386946593",
+      "id": "20181010-131655_2141924504",
+      "dateCreated": "2021-11-29T13:18:04+0000",
+      "dateStarted": "2021-11-29T13:28:01+0000",
+      "dateFinished": "2021-11-29T13:28:06+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:30924"
+    },
+    {
+      "user": "anonymous",
+      "dateUpdated": "2021-11-29T13:18:04+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1638191884545_830556103",
+      "id": "20181010-132637_884037669",
+      "dateCreated": "2021-11-29T13:18:04+0000",
+      "status": "READY",
+      "$$hashKey": "object:30925"
+    }
+  ],
+  "name": "4-3.지역별단지조회수",
+  "id": "2GQX6ENSE",
+  "defaultInterpreterGroup": "spark",
+  "version": "0.9.0",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {},
+  "config": {
+    "isZeppelinNotebookCronEnable": true,
+    "looknfeel": "default",
+    "personalizedMode": "false"
+  },
+  "info": {},
+  "path": "/4-3.지역별단지조회수"
+}
