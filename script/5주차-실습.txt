@@ -1,0 +1,200 @@
+# presto 설정
+
+$ /usr/lib/presto/bin/presto-cli-0.227-executable --server localhost:8889 --catalog hive --schema class
+
+presto:default> show tables ;
+presto:default> select * from hive.njkwon.danji_user_view;
+
+
+
+mysql 연동
+
+/etc/presto/conf/catalog/mysql.properties
+-------------------
+connector.name=mysql
+connection-url=jdbc:mysql://myclass-xxxx.cgfpdcibdeds.ap-northeast-2.rds.amazonaws.com:3306
+connection-user=adxxx
+connection-password=Voxx12#
+-------------------
+
+
+/etc/presto/conf/config.properties
+---------------------------------------
+node-scheduler.include-coordinator=true
+---------------------------------------
+
+#presto 재동 
+systemctl stop presto-server 
+systemctl start presto-server 
+
+
+presto 접속 
+/usr/lib/presto/bin/presto-cli --server localhost:8889 --catalog mysql --schema dw
+
+테스트  sql 
+select a.base_date, 
+       a.danji_id, 
+       b.danji_name,
+       b.sido,
+       b.sigungu,
+       b.dong,
+       count(*) as view_count
+from hive.class.danji_user_view_silver a 
+join mysql.dw.danji_master b
+on a.danji_id = b.id 
+group by a.base_date, 
+       a.danji_id, 
+       b.danji_name,
+       b.sido,
+       b.sigungu,
+       b.dong
+
+
+
+# zeppelin jdbc interprinter 설치
+
+# zeppelin jdbc interprinter 설치
+
+$sudo su - 
+
+#cd /usr/lib/zeppelin
+#./bin/install-interpreter.sh --name jdbc
+
+sudo systemctl stop zeppelin
+ps -ef|grep zeppelin 
+sudo systemctl stop zeppelin
+
+
+사용자에 의해 패치된 presto-jdbc 사용
+
+https://github.com/gabrielrcouto/presto/releases
+
+cd /home/hadoop
+
+sudo wget https://github.com/gabrielrcouto/presto/releases/download/0.225/presto-jdbc-0.225-SNAPSHOT.jar 
+
+sudo chown hadoop:hadoop presto-jdbc-0.225-SNAPSHOT.jar 
+
+
+#
+default.driver : com.facebook.presto.jdbc.PrestoDriver
+default.url    : jdbc:presto://localhost:8889
+default.user   : hive
+
+
+Driver download 설명서
+https://www.tableau.com/ko-kr/support/drivers?edition=pro&lang=ko-kr&platform=mac&cpu=64&version=2019.2&__full-version=20192.20.0119.2115#athena
+
+
+Download site 
+https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html
+
+Mac : 
+$cd ~/Library/Tableau/Drivers
+$cp ~/Downloads/AthenaJDBC42.jar .
+
+Window : 
+C:\Program Files\Tableau\Drivers
+
+
+
+
+#
+
+$ sudo yum install -y java-1.8.0-openjdk-devel.x86_64
+5.2. logstash - producer 프로그램설치  from twitter p53 
+
+
+$ sudo yum install -y java-1.8.0-openjdk-devel.x86_64
+$ wget https://artifacts.elastic.co/downloads/logstash/logstash-7.4.0.tar.gz
+$ tar xvzf logstash-7.4.0.tar.gz
+$ ln -s logstash-7.4.0 logstash
+
+- 초기화 파일에 추가해준다. : 어느 폴더에서도 logstash 실행가능 
+$ vi ~/.bash_profile
+
+export LS_HOME=/home/ec2-user/logstash
+PATH=$PATH:$LS_HOME/bin
+
+$ source ~/.bash_profile
+
+$ logstash --version
+
+
+$ wget https://artifacts.elastic.co/downloads/logstash/logstash-7.4.0.tar.gz
+$ tar xvzf logstash-7.4.0.tar.gz
+$ ln -s logstash-7.1.0 logstash
+
+$ vi ~/.bash_profile
+
+export LS_HOME=/home/ec2-user/logstash
+PATH=$PATH:$LS_HOME/bin
+
+$ source ~/.bash_profile
+
+$ logstash --version
+
+$ mkdir producer
+$ cd producer
+$ vi producer_test.conf
+
+input {
+  s3 {
+      bucket => "fc-class"
+      codec => "json"
+      prefix => "temp/json/"
+      region => "ap-southeast-2"
+      interval => "10"
+      watch_for_new_files => false
+    }
+  }
+output {
+stdout {codec=>rubydebug}
+}
+
+$mkdir json 
+s3://fc-class/temp/json/
+$cp producer_test.conf producer.conf
+
+input {
+s3 {
+access_key_id => "AKIAZ2PFIxxx54RNGZW"
+secret_access_key => "Znfz9nxxxZyxxxUz5kImGn5GxF7Zhuk62"
+bucket => "fc-class"
+region => "ap-northeast-2"
+prefix => "temp/json"
+
+sincedb_path => "/dev/null"
+}
+
+}
+filter {
+  json {
+    source => "message"
+  }
+  mutate { 
+    remove_field => ["@version","host","message"] 
+    }
+}
+output {
+  elasticsearch {
+    hosts => ["https://sexxx-yhf2jbooskxxxwuuhvg5u.ap-northeast-2.es.amazonaws.com:443"]
+    ssl => true
+    index => "class-%{+YYYY.MM.dd}"
+    user => "class"
+    password => "Votmxmzoavjtm1@"
+    ilm_enabled => false
+  }
+}
+
+
+https://www.tableau.com/products/trial 
+
+각자 os 맞는 tableau 를 설치한다.
+
+odbc 설치
+https://www.tableau.com/ko-kr/support/drivers
+
+presto 와 mysql driver 설치 
+
+

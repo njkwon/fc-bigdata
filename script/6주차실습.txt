@@ -1,0 +1,114 @@
+1. 수집 
+ 
+Execution role : arn:aws:iam::5722222507:role/apigatewayTokinesis
+
+#설정
+{stream-name}
+
+HTTP HEADER 
+Name : Content-Type	
+Mapped from : 'application/x-amz-json-1.1'
+
+
+Mapping templates 
+
+application/json
+
+#set ( $enter = "
+")
+#set($json = "$input.json('$')$enter")
+{
+"Data": "$util.base64Encode("$json")",
+"PartitionKey": "$input.params('X-Amzn-Trace-Id')",
+"StreamName": "$input.params('stream-name')"
+}
+
+
+#Test
+curl -d "{\"value\":\"30\",\"type\":\"Tip 3\"}" -H "Content-Type: application/json" -X POST https://z8lxxxxel.execute-api.ap-northeast-2.amazonaws.com/PROD/v2/class1
+
+
+# post 방식 데이터 
+post 방식
+
+application/x-www-form-urlencoded
+
+
+#set ( $d = '"')
+#set ( $enter = "
+")
+#set($jsonInnerStr = "")
+#foreach( $token in $input.path('$').split('&') )
+#set( $keyVal = $token.split('=') )
+#set( $keyValSize = $keyVal.size() )
+#if( $keyValSize >= 1 )
+#set( $key = $util.urlDecode($util.urlDecode($keyVal[0]) ))
+#if( $keyValSize >= 2 )
+#set( $val = $util.urlDecode($util.urlDecode($keyVal[1])) )
+#else
+#set( $val = '' )
+#end
+#set($jsonInnerStr = "${jsonInnerStr}${d}${key}${d} : ${d}${val}${d}")
+#if($foreach.hasNext) #set($jsonInnerStr = "$jsonInnerStr,")#end
+#end
+#end
+#set($json = "{$jsonInnerStr}$enter")
+{
+"Data": "$util.base64Encode("$json")",
+"PartitionKey": "$input.params('X-Amzn-Trace-Id')",
+"StreamName": "$input.params('stream-name')"
+}
+
+
+테스트 발송 (Producer)
+Post urlencoded 
+curl -d "param1=value1&param2=value2" -H "Content-Type: application/x-www-form-urlencoded" -X POST https://xxxxf8.execute-api.ap-northeast-2.amazonaws.com/PROD/v1/class
+
+Content-Type
+
+application/json
+
+#set ( $enter = "
+")
+#set($json = "$input.json('$')$enter")
+{
+"Data": "$util.base64Encode("$json")",
+"PartitionKey": "$input.params('X-Amzn-Trace-Id')",
+"StreamName": "$input.params('stream-name')"
+}
+
+
+curl -d "{\"value\":\"30\",\"type\":\"Tip 3\"}" -H "Content-Type: application/json" -X POST https://xxxf8.execute-api.ap-northeast-2.amazonaws.com/PROD/v1/class
+
+
+2. 분석
+
+emr steps : 
+s3://ap-northeast-2.elasticmapreduce/libs/script-runner/script-runner.jar
+s3://fc-class/shell/mysql-driver.sh
+
+3. Redshift spectrum
+
+--------------------------------------------------------
+create external schema red_class from data catalog 
+database 'class' 
+iam_role 'arn:aws:iam::675xxx2:role/classpectrum' 
+region 'ap-northeast-2';
+--------------------------------------------------------
+
+select a.base_date, 
+       a.danji_id, 
+       b.danji_name,
+       b.sido,
+       b.sigungu,
+       b.dong,
+       count(*) as view_count
+from "sample_data_dev"."red_class".danji_user_view_silver a 
+join "sample_data_dev"."red_class".danji_parquet b
+on a.danji_id = b.id 
+group by a.base_date, 
+       a.danji_id, 
+       b.danji_name,
+       b.sido,
+       b.sigungu,
+       b.dong

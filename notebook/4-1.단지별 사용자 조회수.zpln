@@ -1,0 +1,900 @@
+﻿{
+  "paragraphs": [
+    {
+      "title": "1. 초기화",
+      "text": "\nimport org.json4s._\nimport org.json4s.jackson.JsonMethods._\nimport org.json4s.JsonDSL._\n\nimport org.apache.spark.sql.SparkSession\nimport org.apache.spark.sql.Encoder\n\n\nval spark: SparkSession =\n    SparkSession\n        .builder()\n        .appName(\"StatsAnalyzer\")\n        .enableHiveSupport()\n        .config(\"hive.exec.dynamic.partition\", \"true\")\n        .config(\"hive.exec.dynamic.partition.mode\", \"nonstrict\")\n        .getOrCreate()\n        \n\nval log1=spark.sparkContext.textFile(\"s3://fc-class/logs/*.gz\")\n \n\ncase class Cflog(base_date: String, adid: String, uuid: String,name: String, timestamp: String, gtmTimes: String, screen_name: String\n                , item_id: String, content_type: String, item_category: String, is_zb_agent: String, building_id: String, area_type_id: String\n                , agent_id: String, status: String , button_name: String) \n\ndef parseRawJson(line: String) = {\n     val pieces = line.split(\"\\\\|\") \n     \n     val adid = pieces.apply(1).toString\n     val uuid = pieces.apply(2).toString\n     val name = pieces.apply(3).toString\n     val timestamp = pieces.apply(8).toString\n     val gtmTimes =pieces.apply(7).toString  \n    //JSON Parse\n    val jsonString = pieces.apply(9).toString\n    implicit val formats = DefaultFormats\n    val result = parse(jsonString)\n\n    var screen_name      = (result \\ \"screen_name\").extractOpt[String].getOrElse(\"NULL\").replaceAll(\"nil\", \"NULL\")\n    var item_id           = (result \\ \"item_id\").extractOpt[String].getOrElse(\"NULL\").replaceAll(\"nil\", \"NULL\")\n    val\tcontent_type     = (result \\ \"content_type\").extractOpt[String].getOrElse(\"NULL\").replaceAll(\"nil\", \"NULL\")\n    val\titem_category    = (result \\ \"item_category\").extractOpt[String].getOrElse(\"NULL\").replaceAll(\"nil\", \"NULL\")\n    val\tis_zb_agent      = (result \\ \"is_zb_agent\").extractOpt[String].getOrElse(\"NULL\").replaceAll(\"nil\", \"NULL\")\n    val\tbuilding_id      = (result \\ \"building_id\").extractOpt[String].getOrElse(\"NULL\").replaceAll(\"nil\", \"NULL\")\n    val\tarea_type_id     = (result \\ \"area_type_id\").extractOpt[String].getOrElse(\"NULL\").replaceAll(\"nil\", \"NULL\")\n    val\tagent_id         = (result \\ \"agent_id\").extractOpt[String].getOrElse(\"NULL\").replaceAll(\"nil\", \"NULL\")\n    val\tbutton_name         = (result \\ \"button_name\").extractOpt[String].getOrElse(\"NULL\").replaceAll(\"nil\", \"NULL\")\n    val status  = (result \\ \"status\").extractOpt[String].getOrElse(\"NULL\").replaceAll(\"nil\", \"NULL\")\n    val base_date = timestamp.substring(0,10)\n    \n    \n    Cflog(base_date, adid, uuid, name, timestamp, gtmTimes, screen_name, item_id, content_type, item_category, is_zb_agent, building_id, area_type_id, agent_id, status , button_name)\n}\n\nval logsDFAll = log1.map(line => parseRawJson(line)).toDF()\nlogsDFAll.createOrReplaceTempView(\"logs\")\nsqlContext.cacheTable(\"logs\")",
+      "user": "anonymous",
+      "dateUpdated": "2021-11-27T10:38:44+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/scala",
+        "editorHide": false,
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "import sqlContext.implicits._\nimport org.json4s._\nimport org.json4s.jackson.JsonMethods._\nimport org.json4s.JsonDSL._\nimport org.apache.spark.sql.SparkSession\nimport org.apache.spark.sql.Encoder\n\u001b[1m\u001b[34mspark\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.SparkSession\u001b[0m = org.apache.spark.sql.SparkSession@2aeb639b\n\u001b[1m\u001b[34mlog1\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.rdd.RDD[String]\u001b[0m = s3://fc-class/logs/*.gz MapPartitionsRDD[172] at textFile at <console>:47\ndefined class Cflog\n\u001b[1m\u001b[34mparseRawJson\u001b[0m: \u001b[1m\u001b[32m(line: String)Cflog\u001b[0m\n\u001b[1m\u001b[34mlogsDFAll\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m = [base_date: string, adid: string ... 14 more fields]\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1637730829839_1348949726",
+      "id": "20181009-063030_63826522",
+      "dateCreated": "2021-11-24T05:13:49+0000",
+      "dateStarted": "2021-11-27T10:38:44+0000",
+      "dateFinished": "2021-11-27T10:38:46+0000",
+      "status": "FINISHED",
+      "focus": true,
+      "$$hashKey": "object:318"
+    },
+    {
+      "text": "logsDFAll.show",
+      "user": "anonymous",
+      "dateUpdated": "2021-11-24T05:39:26+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1637732359230_1713089437",
+      "id": "paragraph_1637732359230_1713089437",
+      "dateCreated": "2021-11-24T05:39:19+0000",
+      "dateStarted": "2021-11-24T05:39:26+0000",
+      "dateFinished": "2021-11-24T05:39:26+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:319"
+    },
+    {
+      "text": "%sql\n\nselect count(*) \nfrom logs",
+      "user": "anonymous",
+      "dateUpdated": "2021-11-27T10:39:25+0000",
+      "progress": 98,
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/sql",
+        "fontSize": 9,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "count(1)": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        },
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1637730829839_1816939118",
+      "id": "20190720-062512_31035062",
+      "dateCreated": "2021-11-24T05:13:49+0000",
+      "dateStarted": "2021-11-27T10:39:25+0000",
+      "dateFinished": "2021-11-27T10:40:38+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:320"
+    },
+    {
+      "text": "%sql\nselect *\nfrom logs\nwhere item_category = '아파트'",
+      "user": "anonymous",
+      "dateUpdated": "2021-11-27T10:41:11+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/sql",
+        "fontSize": 9,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "base_date": "string",
+                      "adid": "string",
+                      "uuid": "string",
+                      "name": "string",
+                      "timestamp": "string",
+                      "gtmTimes": "string",
+                      "screen_name": "string",
+                      "item_id": "string",
+                      "content_type": "string",
+                      "item_category": "string",
+                      "is_zb_agent": "string",
+                      "building_id": "string",
+                      "area_type_id": "string",
+                      "agent_id": "string",
+                      "status": "string",
+                      "button_name": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          },
+          "1": {
+            "graph": {
+              "mode": "table",
+              "height": 300,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "base_date": "string",
+                      "adid": "string",
+                      "uuid": "string",
+                      "name": "string",
+                      "timestamp": "string",
+                      "gtmTimes": "string",
+                      "screen_name": "string",
+                      "item_id": "string",
+                      "content_type": "string",
+                      "item_category": "string",
+                      "is_zb_agent": "string",
+                      "building_id": "string",
+                      "area_type_id": "string",
+                      "agent_id": "string",
+                      "status": "string",
+                      "button_name": "string"
+                    },
+                    "updated": true
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        },
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1637730829839_1554085369",
+      "id": "20190720-062707_1646973019",
+      "dateCreated": "2021-11-24T05:13:49+0000",
+      "dateStarted": "2021-11-27T10:41:11+0000",
+      "dateFinished": "2021-11-27T10:41:11+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:321"
+    },
+    {
+      "text": "%sql\nselect *\nfrom logs",
+      "user": "anonymous",
+      "dateUpdated": "2021-11-27T10:42:41+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/sql",
+        "fontSize": 9,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "base_date": "string",
+                      "adid": "string",
+                      "uuid": "string",
+                      "name": "string",
+                      "timestamp": "string",
+                      "gtmTimes": "string",
+                      "screen_name": "string",
+                      "item_id": "string",
+                      "content_type": "string",
+                      "item_category": "string",
+                      "is_zb_agent": "string",
+                      "building_id": "string",
+                      "area_type_id": "string",
+                      "agent_id": "string",
+                      "status": "string",
+                      "button_name": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        },
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1638009751165_226262883",
+      "id": "paragraph_1638009751165_226262883",
+      "dateCreated": "2021-11-27T10:42:31+0000",
+      "dateStarted": "2021-11-27T10:42:40+0000",
+      "dateFinished": "2021-11-27T10:42:40+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:322"
+    },
+    {
+      "text": "%sql\n\n    select  \n           hour(timestamp) as h \n           , count(adid) as count\n    from logs \n    where item_category = '아파트'\n    and name = 'view_item'\n    and screen_name = '아파트 상세'\n    group by  hour(timestamp)\n    order by  hour(timestamp)",
+      "user": "anonymous",
+      "dateUpdated": "2021-11-27T11:12:28+0000",
+      "progress": 52,
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/sql",
+        "fontSize": 9,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "h": "string",
+                      "count": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                },
+                "multiBarChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                },
+                "lineChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "h",
+                  "index": 0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "values": [
+                {
+                  "name": "count",
+                  "index": 1,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1637730829841_678089974",
+      "id": "20190720-070953_146594222",
+      "dateCreated": "2021-11-24T05:13:49+0000",
+      "dateStarted": "2021-11-27T10:42:23+0000",
+      "dateFinished": "2021-11-27T10:42:24+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:323"
+    },
+    {
+      "title": "2. 아파트 단지 조회",
+      "text": "%sql\n\n\n    select base_date,\n           adid, \n           timestamp as base_dt,\n           building_id as danji_id \n    from logs \n    where item_category = '아파트'\n    and name = 'view_item'\n    and screen_name = '아파트 상세'\n \n    \n  ",
+      "user": "anonymous",
+      "dateUpdated": "2021-11-27T11:12:42+0000",
+      "progress": 31,
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/sql",
+        "fontSize": 9,
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "count(1)": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                },
+                "multiBarChart": {
+                  "rotate": {
+                    "degree": "-45"
+                  },
+                  "xLabelStatus": "default"
+                }
+              },
+              "commonSetting": {},
+              "keys": [
+                {
+                  "name": "base_date",
+                  "index": 0,
+                  "aggr": "sum"
+                }
+              ],
+              "groups": [],
+              "values": [
+                {
+                  "name": "adid",
+                  "index": 1,
+                  "aggr": "sum"
+                }
+              ]
+            },
+            "helium": {}
+          }
+        },
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1637730829841_1743836619",
+      "id": "20181009-063251_1318375227",
+      "dateCreated": "2021-11-24T05:13:49+0000",
+      "dateStarted": "2021-11-27T10:49:17+0000",
+      "dateFinished": "2021-11-27T10:49:17+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:324"
+    },
+    {
+      "text": "%sql\n    select *\n    from logs \n    where item_category = '아파트'\n    and item_id != 'NULL'\n  --  and name = 'view_item'\n  and screen_name = '아파트 매물상세'",
+      "user": "anonymous",
+      "dateUpdated": "2021-11-27T11:18:30+0000",
+      "progress": 25,
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/sql",
+        "fontSize": 9,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "base_date": "string",
+                      "adid": "string",
+                      "uuid": "string",
+                      "name": "string",
+                      "timestamp": "string",
+                      "gtmTimes": "string",
+                      "screen_name": "string",
+                      "item_id": "string",
+                      "content_type": "string",
+                      "item_category": "string",
+                      "is_zb_agent": "string",
+                      "building_id": "string",
+                      "area_type_id": "string",
+                      "agent_id": "string",
+                      "status": "string",
+                      "button_name": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        },
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TABLE",
+            "data": "base_date\tadid\tuuid\tname\ttimestamp\tgtmTimes\tscreen_name\titem_id\tcontent_type\titem_category\tis_zb_agent\tbuilding_id\tarea_type_id\tagent_id\tstatus\tbutton_name\n2018-01-26\t84556b1c-55c7-4b32-a8bc-c176b196a20f\t8e1f97ff-694e-46a6-868e-c180d57d999a\tview_item\t2018-01-26 20:45:47\t1516967143823\t아파트 매물상세\t60650\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t1cb7d72e-7006-4fb5-97a1-828c2e8c4cd9\t71db43e1-4538-41d7-92d6-faf5c96d1a16\tview_item\t2018-01-26 06:40:54\t1516916451278\t아파트 매물상세\t125978\tNULL\t아파트\tNULL\t9079\t9079\tNULL\tNULL\tNULL\n2018-01-26\t6d90280a-684a-455f-9cd3-45217315a095\t74332455-1c4c-4137-b428-346da0debde2\tview_item\t2018-01-26 23:46:20\t1516977979064\t아파트 매물상세\t76307\tNULL\t아파트\tNULL\t10018\t10018\tNULL\tNULL\tNULL\n2018-01-26\t4a20a3f4-4a95-49ad-bbe1-256bbfe9763e\taa2b57d4-6f35-4273-80b0-61d8e09794fc\tview_item\t2018-01-26 02:03:50\t1516899828969\t아파트 매물상세\t101633\tNULL\t아파트\tNULL\t6492\t6492\tNULL\tNULL\tNULL\n2018-01-26\tff524677-1ad2-46a9-b0d0-6c02f9950066\t6b629fb4-056a-45a6-9241-14642070c261\tview_item\t2018-01-26 13:34:05\t1516941244026\t아파트 매물상세\t65290\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tb38ca591-260e-4248-ba89-4372bc4c7a6d\t3223f634-6e75-4614-a82b-4460b12c7ee4\tview_item\t2018-01-26 03:21:04\t1516904467028\t아파트 매물상세\t115625\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tacb81ada-ba03-4642-a3bb-d6de7d060d87\t97f95f3c-d9f4-4bd1-8856-ce48c407411e\tview_item\t2018-01-26 06:47:04\t1516916809839\t아파트 매물상세\t128650\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\td0c47912-deb6-48fa-98d4-ff8425333d24\tb06df1d0-5dce-4571-a315-b331a619592c\tview_item\t2018-01-26 13:33:14\t1516941192243\t아파트 매물상세\t70663\tNULL\t아파트\tNULL\t6212\t6212\tNULL\tNULL\tNULL\n2018-01-26\t20985acc-8b0a-4faf-b64b-c3f0479f6149\td893de85-d45e-4e38-8c39-3d2b8cb19ed0\tview_item\t2018-01-26 14:47:01\t1516945618794\t아파트 매물상세\t70567\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t3b03078c-0516-4480-af5d-361f5310dbc4\t29f9f973-6f58-44aa-9835-00bb6f0ed365\tview_item\t2018-01-26 18:25:38\t1516958736253\t아파트 매물상세\t62147\tNULL\t아파트\tNULL\t6157\t6157\tNULL\tNULL\tNULL\n2018-01-26\t8790af0f-2eed-4db6-b4bd-081613a68027\t1e3ae681-98e0-4c0f-a708-69ab0e63e26a\tview_item\t2018-01-26 07:20:56\t1516918853365\t아파트 매물상세\t80918\tNULL\t아파트\tNULL\t2809\t2809\tNULL\tNULL\tNULL\n2018-01-26\t15947ea6-93f9-42c6-8547-b68a03a0a567\tb927f706-5ddf-492c-a151-5bf96319bc10\tview_item\t2018-01-26 18:08:37\t1516957716273\t아파트 매물상세\t92910\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t0c277abb-38de-47d5-821a-55993aee34a4\t68c74c0f-895f-49b5-8dbc-5f19848f6729\tview_item\t2018-01-26 00:42:52\t1516894970878\t아파트 매물상세\t127687\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\td187fedf-2e24-435d-a5ae-4b4316a5df43\t889f3c18-854b-4032-b88e-c02fff8d8e2b\tview_item\t2018-01-26 22:38:56\t1516973936292\t아파트 매물상세\t129794\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t9f3f80a4-5ac4-4e48-be45-38e00a0ee612\tf6b6eb63-ea9d-4aac-a739-e7788fb84e11\tview_item\t2018-01-26 22:04:07\t1516971843398\t아파트 매물상세\t128922\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t0512ef21-d0e1-4035-83b7-addb710c5b3d\t63d4fa02-9355-434a-97c7-59354e422a06\tview_item\t2018-01-26 04:37:21\t1516909039360\t아파트 매물상세\t114121\tNULL\t아파트\tNULL\t2007\t2007\tNULL\tNULL\tNULL\n2018-01-26\t3f3e64eb-1f3b-4094-948f-26eaf271f5b9\tc2704b87-b002-4d73-9464-9523606c15be\tview_item\t2018-01-26 16:03:20\t1516950199332\t아파트 매물상세\t58911\tNULL\t아파트\tNULL\t840\t840\tNULL\tNULL\tNULL\n2018-01-26\t0d1c3b6d-edd7-45d6-a38a-df5ad4874a79\te96a995d-d869-487a-8e34-4c0ff701d949\tview_item\t2018-01-26 22:33:52\t1516973630946\t아파트 매물상세\t117027\tNULL\t아파트\tNULL\t948\t948\tNULL\tNULL\tNULL\n2018-01-26\t55fca688-b3fa-4e6b-9abf-23fced2a5d12\t59897679-6ec8-4ce5-960d-fa5de3f18aaa\tview_item\t2018-01-26 21:48:48\t1516970931408\t아파트 매물상세\t66064\tNULL\t아파트\tNULL\t33235\t33235\tNULL\tNULL\tNULL\n2018-01-26\t0a1aac5b-1079-490a-9952-4e52a02d3e7f\tdd0009da-f9b4-4899-ae34-634d60a7b7ba\tview_item\t2018-01-26 22:34:30\t1516973669575\t아파트 매물상세\t109478\tNULL\t아파트\tNULL\t690\t690\tNULL\tNULL\tNULL\n2018-01-26\td97c7005-c0fd-4f62-967c-9fb339b621a6\tfe6bf818-cfb4-4793-9039-615cb8221940\tview_item\t2018-01-26 18:56:56\t1516960614789\t아파트 매물상세\t120036\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tdba93026-da39-43f0-8821-04468e62eb32\tfef8f227-c1b9-4799-932f-4382d069e9b1\tview_item\t2018-01-26 02:53:26\t1516902798995\t아파트 매물상세\t131890\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tfae672af-91dd-486c-8908-e0f8010d3c89\t9725d71b-dc09-4091-9b53-65db1e589616\tview_item\t2018-01-26 18:33:53\t1516959229507\t아파트 매물상세\t105205\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t1a1c8a85-8c68-45ea-a413-207321efeefe\tf635fb24-106f-4d7b-a947-286f589fb5b8\tview_item\t2018-01-26 10:43:25\t1516931002480\t아파트 매물상세\t105674\tNULL\t아파트\tNULL\t12054\t12054\tNULL\tNULL\tNULL\n2018-01-26\te20fbd65-758c-4b96-9d15-8a02306fbeab\t63fa6dc9-3be7-42b1-a63a-50b8fbf09073\tview_item\t2018-01-26 06:37:23\t1516916240755\t아파트 매물상세\t80627\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t1c7f6e64-dd6f-4a94-b3e1-47c15b0fa75b\t00409d67-4453-4e7d-a163-a3b7a978a33f\tview_item\t2018-01-26 23:28:52\t1516976931498\t아파트 매물상세\t72910\tNULL\t아파트\tNULL\t11058\t11058\tNULL\tNULL\tNULL\n2018-01-26\t0167560f-e9b9-48ac-8b7e-6d2daccaced6\t1863ac0e-b82a-40f1-8789-f166a18eeccb\tview_item\t2018-01-26 11:59:41\t1516935579617\t아파트 매물상세\t83699\tNULL\t아파트\tNULL\t18022\t18022\tNULL\tNULL\tNULL\n2018-01-26\t92e5cfc1-f5e1-4f61-8d6d-ba87addfd3bf\tf9f22e68-9f53-4282-93dc-ccaabf5c33ad\tview_item\t2018-01-26 22:04:41\t1516971879907\t아파트 매물상세\t95677\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t53fc0a18-6203-4b15-ba82-9d515fd77e8d\tca898089-4d03-4511-a38a-8d47082c8bff\tview_item\t2018-01-26 18:08:15\t1516957697814\t아파트 매물상세\t125714\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t84556b1c-55c7-4b32-a8bc-c176b196a20f\t8e1f97ff-694e-46a6-868e-c180d57d999a\tview_item\t2018-01-26 20:40:58\t1516966855540\t아파트 매물상세\t111024\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t66e8e2e8-055e-4e15-b354-a7650248f45f\t61be25d5-e3ce-40d0-8882-5bd8905af4ef\tview_item\t2018-01-26 22:10:26\t1516972224520\t아파트 매물상세\t125582\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t1aa446d8-9ed6-4061-9fe5-593585dd893f\t9f843846-65be-4282-be72-feda9842b0ce\tview_item\t2018-01-26 09:17:17\t1516925834662\t아파트 매물상세\t130646\tNULL\t아파트\tNULL\t3646\t3646\tNULL\tNULL\tNULL\n2018-01-26\td6ad28e0-7520-4948-9a90-55157621250e\t317c2296-ba77-4642-a29d-4256e72e5e44\tview_item\t2018-01-26 20:21:26\t1516965683827\t아파트 매물상세\t134513\tNULL\t아파트\tNULL\t1883\t1883\tNULL\tNULL\tNULL\n2018-01-26\t7e1fb6f4-5c67-4064-ba95-fbdc77cafc76\t6a89152a-a8a9-4b7c-9e9e-155f111e4f86\tview_item\t2018-01-26 11:41:01\t1516934460035\t아파트 매물상세\t93183\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\taf89f78f-ce3a-48d0-8082-ba43fd995486\t29f13acb-fd8b-4eaa-9d51-a7553b65b8c1\tview_item\t2018-01-26 22:41:36\t1516974095381\t아파트 매물상세\t103736\tNULL\t아파트\tNULL\t22522\t22522\tNULL\tNULL\tNULL\n2018-01-26\t0d77b952-228b-4e24-a049-eb77db72da41\t05d15020-cc07-49f6-a6bf-58110951c9cc\tview_item\t2018-01-26 11:38:13\t1516934290464\t아파트 매물상세\t91050\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t7ed78de5-0a94-4260-85d3-b4c13e519d02\t760975e2-1c1b-4761-934d-235e774e0246\tview_item\t2018-01-26 02:52:32\t1516902750541\t아파트 매물상세\t107618\tNULL\t아파트\tNULL\t36941\t36941\tNULL\tNULL\tNULL\n2018-01-26\t0d3a2c08-1fb8-45f2-9f4c-dd18f50a7ea1\t05af2467-6a67-4117-a8df-15e9e1f3641f\tview_item\t2018-01-26 16:59:17\t1516953555007\t아파트 매물상세\t128359\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t81f688c2-56e4-4e8d-a571-16ce7027e8fd\t4c3d9ac8-8833-4258-b72d-d8cc038ef191\tview_item\t2018-01-26 00:23:42\t1516893820671\t아파트 매물상세\t121540\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t2f6b9126-99af-42ae-8754-a70ffda90e22\t4971b312-acb0-430a-a776-a963650b65d0\tecommerce_purchase\t2018-01-26 18:06:33\t1516957591575\t아파트 매물상세\t119267\t전화\t아파트\tNULL\t1312\t3560\t2728591\tNULL\tNULL\n2018-01-26\t830793b5-10d5-4712-924c-b95a980e7812\t673d505d-7692-4de4-b6a9-82549e7560c2\tview_item\t2018-01-26 03:23:54\t1516904631343\t아파트 매물상세\t70663\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t8166b291-6c75-4d1a-b920-48f5a534f22d\tb1f3bc90-e1f3-4588-bb5c-688a37beeb77\tview_item\t2018-01-26 22:36:45\t1516973803930\t아파트 매물상세\t120830\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\te9cda7c0-9189-470d-af95-974958455041\tdc32e120-e0d8-4c59-9b01-1283f457f59b\tview_item\t2018-01-26 00:15:01\t1516893299318\t아파트 매물상세\t109704\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t59bcbfbf-4dd5-4fa8-b525-1f4c5525414b\t43dda13c-d526-4a0a-81e7-2e13fbc48398\tview_item\t2018-01-26 18:57:44\t1516960661428\t아파트 매물상세\t98397\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t6c3b627c-24be-4a3e-8c0a-e2ba9bd7f8dd\tc89a6bfd-72ed-47b1-a188-73c87bcbf1f1\tview_item\t2018-01-26 04:36:52\t1516909011134\t아파트 매물상세\t129012\tNULL\t아파트\tNULL\t21219\t21219\tNULL\tNULL\tNULL\n2018-01-26\t0583e111-d2b3-4a7e-a4a9-0f8a4ad23d17\taf531eb9-1c91-44bf-ae6d-d60afa639cda\tview_item\t2018-01-26 15:38:15\t1516948693537\t아파트 매물상세\t132318\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\te9dc9dc7-c223-4a76-b291-34d3d5e4288f\t4d19c033-f52c-4d78-b8c3-775ced2138ed\tview_item\t2018-01-26 05:47:13\t1516913235947\t아파트 매물상세\t64487\tNULL\t아파트\tNULL\t3466\t3466\tNULL\tNULL\tNULL\n2018-01-26\t7d6d5703-4ac3-4131-861a-adb903c1f345\tb37860e1-0bc6-4254-a6c1-6444e42abc31\tview_item\t2018-01-26 20:20:52\t1516965656030\t아파트 매물상세\t97906\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tf5fd693b-9c78-47e1-bb02-35ffa704a7ad\t70512d48-2928-478c-b3a3-5cf23456f921\tview_item\t2018-01-26 19:36:13\t1516962971330\t아파트 매물상세\t71342\tNULL\t아파트\tNULL\t4118\t4118\tNULL\tNULL\tNULL\n2018-01-26\t1f50f3b9-3b6a-4429-b86a-a8f7b97ef723\tf1330d79-eb3a-4a45-9762-565796998a36\tview_item\t2018-01-26 10:48:20\t1516931298735\t아파트 매물상세\t132806\tNULL\t아파트\tNULL\t6109\t6109\tNULL\tNULL\tNULL\n2018-01-26\t8d5c87d7-58a5-4c2e-addb-83d04675011d\tdd78946a-413e-4d8d-ace5-60c2e81d3514\tview_item\t2018-01-26 20:35:06\t1516966503532\t아파트 매물상세\t97562\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tb8226877-f487-45a5-89cd-0d4f0d5c1f43\t7c5ec6e4-2daa-4621-b7a5-8497acfe4cae\tview_item\t2018-01-26 18:33:52\t1516959230409\t아파트 매물상세\t132344\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t9D75F3BA-195F-44BF-8BD8-D584913DEAE3\tAA0ECFE1-2471-4293-82B7-AB545EAB246F\tview_item\t2018-01-26 02:46:25\t1516902385\t아파트 매물상세\t130947\tNULL\t아파트\tNULL\t2909\t6181\tNULL\tNULL\tNULL\n2018-01-26\t6552c241-5fe2-4db3-b9a0-1634def1191b\t24741763-d26e-428e-9ac9-b43d0e0865ce\tview_item\t2018-01-26 18:00:45\t1516957244341\t아파트 매물상세\t133665\tNULL\t아파트\tNULL\t2576\t2576\tNULL\tNULL\tNULL\n2018-01-26\t0cde7c45-c3cf-43c7-bf48-72dc455d988b\t30a7e1ef-3c54-4fd0-ac7b-8851e47381c6\tview_item\t2018-01-26 15:44:48\t1516949087022\t아파트 매물상세\t77778\tNULL\t아파트\tNULL\t785\t785\tNULL\tNULL\tNULL\n2018-01-26\t2f577265-b807-4c34-a526-956bcb453138\tea2139f0-ba67-4073-ae84-877ecfbb808d\tview_item\t2018-01-26 01:23:53\t1516897434500\t아파트 매물상세\t68306\tNULL\t아파트\tNULL\t33246\t33246\tNULL\tNULL\tNULL\n2018-01-26\t903bc27d-4a3b-473f-a901-18326dc61c63\tb165bdb4-7948-41be-b931-f2a19ee855eb\tview_item\t2018-01-26 23:36:26\t1516977382302\t아파트 매물상세\t114949\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t53e2839e-2f57-4c44-b08c-acc2b1fcce23\tbfc4f26f-c770-40c2-b435-23f6e42625d3\tview_item\t2018-01-26 03:05:18\t1516903517302\t아파트 매물상세\t89346\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t20f3f5d8-df56-48b6-999d-3c73fedf922b\t902e5e7e-de68-4409-96c9-f5bb010a705e\tview_item\t2018-01-26 22:28:33\t1516973311908\t아파트 매물상세\t58619\tNULL\t아파트\tNULL\t3361\t3361\tNULL\tNULL\tNULL\n2018-01-26\tedb592e1-ba4f-44b5-8e34-79f26138846f\te5a8896d-c0a2-4a92-b8a5-2ee346723810\tview_item\t2018-01-26 04:08:13\t1516907293542\t아파트 매물상세\t133799\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t213be9d1-2a55-4cbb-aff8-08e442d00372\t01d5e658-d8bf-4742-b486-29c64e82e657\tview_item\t2018-01-26 08:50:32\t1516924232217\t아파트 매물상세\t62211\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\taa1134c1-8352-4041-867e-00207e770a58\t88bdb6d3-6ff6-459e-8906-dcd4fd5a39f2\tview_item\t2018-01-26 22:47:31\t1516974448821\t아파트 매물상세\t129554\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tfa08b97f-72ee-4c2f-be54-1a51d2b64468\tcff2da24-d1f4-4dd1-bd9a-fe04422789c5\tview_item\t2018-01-26 00:11:29\t1516893087770\t아파트 매물상세\t89512\tNULL\t아파트\tNULL\t6572\t6572\tNULL\tNULL\tNULL\n2018-01-26\t9b5e15bc-8863-473a-8398-93bdf9631399\tac5ae4c1-f415-4d5b-905c-181d07c8588c\tview_item\t2018-01-26 15:07:58\t1516946875885\t아파트 매물상세\t120418\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\ta20be38f-8930-488e-add8-3089b923e385\t7a4411ac-7ed4-4035-9b5c-0dd177a16af3\tview_item\t2018-01-26 23:51:17\t1516978274059\t아파트 매물상세\t89742\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t8933d492-abdb-414f-ac5d-a07d9aa8fd14\te27ea6cb-7994-4af1-8e45-e231d97dd365\tview_item\t2018-01-26 12:22:11\t1516936930028\t아파트 매물상세\t125178\tNULL\t아파트\tNULL\t22253\t22253\tNULL\tNULL\tNULL\n2018-01-26\t54e3b861-9071-40ba-8775-7d6bdc6d14ba\td4b71692-f37d-4022-a3d0-c32e71e61fad\tview_item\t2018-01-26 15:32:16\t1516948334541\t아파트 매물상세\t68522\tNULL\t아파트\tNULL\t9555\t9555\tNULL\tNULL\tNULL\n2018-01-26\t29cd3fe7-c90a-4bba-a2bf-a2b031a5f090\t6fa4d417-dafd-4af9-9466-217d4846c694\tview_item\t2018-01-26 04:10:05\t1516907402947\t아파트 매물상세\t57401\tNULL\t아파트\tNULL\t23083\t23083\tNULL\tNULL\tNULL\n2018-01-26\t89795725-c7ca-4da6-ba83-b9a839d115a1\t3023f641-20ee-484b-bf01-49bee47596c6\tview_item\t2018-01-26 13:22:00\t1516940518207\t아파트 매물상세\t96044\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tb5459e4f-bd04-4a47-8e11-7b953c455354\t4940ddf0-ac89-4856-9fe1-6509358bbbb7\tview_item\t2018-01-26 13:26:23\t1516940781207\t아파트 매물상세\t132707\tNULL\t아파트\tNULL\t37099\t37099\tNULL\tNULL\tNULL\n2018-01-26\t3b03078c-0516-4480-af5d-361f5310dbc4\t29f9f973-6f58-44aa-9835-00bb6f0ed365\tview_item\t2018-01-26 18:09:47\t1516957785644\t아파트 매물상세\t79515\tNULL\t아파트\tNULL\t8168\t8168\tNULL\tNULL\tNULL\n2018-01-26\tc5103a38-5d2a-465b-be02-bdd5c51fee12\t373cebb9-db6e-450b-ade0-7564aa67c4e7\tview_item\t2018-01-26 20:18:51\t1516965530321\t아파트 매물상세\t118620\tNULL\t아파트\tNULL\t36520\t36520\tNULL\tNULL\tNULL\n2018-01-26\td03203a2-cb4b-4295-a69f-101168b9dd1f\t3dc73e9d-8ac4-4795-9c36-7526cb40d5e7\tview_item\t2018-01-26 04:09:25\t1516907363556\t아파트 매물상세\t70532\tNULL\t아파트\tNULL\t26318\t26318\tNULL\tNULL\tNULL\n2018-01-26\t74056994-79a4-4eac-af56-aabef7caed10\t08ccdf00-491e-4b22-aaa7-6a07fca15fe3\tview_item\t2018-01-26 16:43:04\t1516952583728\t아파트 매물상세\t104874\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t215a613b-1b1c-415d-b4d4-16732ca3a4d2\taebd6fa4-914b-4f85-898c-ba75cf7668c3\tview_item\t2018-01-26 23:31:09\t1516977066741\t아파트 매물상세\t90163\tNULL\t아파트\tNULL\t3161\t3161\tNULL\tNULL\tNULL\n2018-01-26\te2dbe2cb-4c74-48e3-9e57-537455ae2223\tf3ba5c1a-8e3f-4168-a611-121396ea0ed1\tview_item\t2018-01-26 18:36:35\t1516959393357\t아파트 매물상세\t69962\tNULL\t아파트\tNULL\t4117\t4117\tNULL\tNULL\tNULL\n2018-01-26\te6a3f3a3-2b35-4bd8-95c4-5872df8fb73e\tfdcf1c1b-e4e8-4fa6-aae9-84433b5584db\tview_item\t2018-01-26 20:10:36\t1516965031412\t아파트 매물상세\t75692\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t158b5a24-f100-4fd4-a56f-08b728847e45\t956589bc-5b2b-4fc8-9ef2-0e3d48ec8426\tview_item\t2018-01-26 09:18:38\t1516925921561\t아파트 매물상세\t107647\tNULL\t아파트\tNULL\t17016\t17016\tNULL\tNULL\tNULL\n2018-01-26\tf78c9fa4-e571-404e-a726-7c5ecf923458\t338c4c93-207e-43c9-a7d5-6c564d4ad3fb\tview_item\t2018-01-26 13:53:09\t1516942387155\t아파트 매물상세\t107458\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t2c2dc8c6-fb27-48cd-9f4c-e75f92dd91a4\tb0c480fe-92ea-4a4d-9ba1-0755398dddf6\tview_item\t2018-01-26 21:44:30\t1516970667317\t아파트 매물상세\t107020\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tb7ec65e8-10c3-40e5-a375-6cb98733b130\t3827acb5-cdea-4f90-9f1f-a98ee1ee3fd0\tview_item\t2018-01-26 06:38:14\t1516916293586\t아파트 매물상세\t133688\tNULL\t아파트\tNULL\t7250\t7250\tNULL\tNULL\tNULL\n2018-01-26\t63b3c55c-71f3-4571-99a1-c4949641bedb\t6a217a0e-aad5-415d-a83a-ff4bd92c3150\tview_item\t2018-01-26 00:46:38\t1516895203093\t아파트 매물상세\t75191\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t84ee49aa-4a07-417c-8a6c-5341cf5c0891\t888de033-792a-445b-8ab8-892c3ac8e2e1\tview_item\t2018-01-26 22:37:46\t1516973866047\t아파트 매물상세\t64220\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\td88742cb-27ac-40c4-81ee-1984acb195c3\t3eb98ba2-ce3b-4dc3-81ce-ad749e902075\tview_item\t2018-01-26 18:54:09\t1516960446379\t아파트 매물상세\t57233\tNULL\t아파트\tNULL\t33739\t33739\tNULL\tNULL\tNULL\n2018-01-26\t10c7a249-f071-4061-8678-82d62ed69d20\tb7357e69-1bfa-41e4-9fe2-a608f7c0da7a\tview_item\t2018-01-26 15:24:21\t1516947859864\t아파트 매물상세\t125618\tNULL\t아파트\tNULL\t37012\t37012\tNULL\tNULL\tNULL\n2018-01-26\tc442e276-7a75-45b8-9ebe-50c6cea8dd58\t008e541f-b61b-4f31-8600-a3a7038d772a\tview_item\t2018-01-26 14:32:20\t1516944738606\t아파트 매물상세\t107721\tNULL\t아파트\tNULL\t18934\t18934\tNULL\tNULL\tNULL\n2018-01-26\tc36497d8-9630-4f91-9169-b75ea10cd79e\t8eeabfe3-7f89-4db7-92d3-180411cc8f39\tview_item\t2018-01-26 08:16:09\t1516922167003\t아파트 매물상세\t72840\tNULL\t아파트\tNULL\t410\t410\tNULL\tNULL\tNULL\n2018-01-26\td8d8bc0e-bd07-435f-aced-9014e4e23686\t6171f0f2-89fc-4a85-8c40-6ffcfdee0ebc\tview_item\t2018-01-26 17:29:00\t1516955337870\t아파트 매물상세\t57091\tNULL\t아파트\tNULL\t33257\t33257\tNULL\tNULL\tNULL\n2018-01-26\t0a1aac5b-1079-490a-9952-4e52a02d3e7f\tdd0009da-f9b4-4899-ae34-634d60a7b7ba\tview_item\t2018-01-26 21:48:22\t1516970900822\t아파트 매물상세\t119289\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tda81b278-6870-40aa-85ce-b0e1c0b66bb6\tbba5a023-737a-4534-948c-e82221654457\tview_item\t2018-01-26 22:45:26\t1516974326381\t아파트 매물상세\t94297\tNULL\t아파트\tNULL\t19115\t19115\tNULL\tNULL\tNULL\n2018-01-26\t72054387-11cf-404b-bf16-06431a7016b7\tb3a6006f-fd70-437c-a151-b1f7fe80d81f\tview_item\t2018-01-26 18:30:29\t1516959028547\t아파트 매물상세\t64790\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\te77c26c4-3af7-4e65-88be-c8da2ca2659d\td72aa464-aa3d-4176-be51-1a8bdf326bc2\tview_item\t2018-01-26 16:33:44\t1516952022333\t아파트 매물상세\t116805\tNULL\t아파트\tNULL\t33498\t33498\tNULL\tNULL\tNULL\n2018-01-26\t527c7781-65f1-4539-8f20-6e1882dc8c97\tf124b4ea-6b68-4753-87bc-9e1149f064b6\tview_item\t2018-01-26 13:07:10\t1516939628449\t아파트 매물상세\t109410\tNULL\t아파트\tNULL\t21579\t21579\tNULL\tNULL\tNULL\n2018-01-26\t4af1762e-4cfd-4865-ba19-7571692632b6\tb92eee02-056b-4424-8611-fa14e4f4e5ab\tview_item\t2018-01-26 18:44:26\t1516959864579\t아파트 매물상세\t134439\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t5aee4b6d-b1b7-4dec-a667-b004ee73f4ac\t7b8e5d3d-90f4-440d-9b0f-0a7b50f7d3bc\tview_item\t2018-01-26 14:18:31\t1516943910169\t아파트 매물상세\t82067\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tB00999FD-6657-4BE6-BD27-344D4FB7B2FA\t0D366CA7-EC88-4ACD-A178-C997BC0704BC\tview_item\t2018-01-26 18:50:43\t1516960243\t아파트 매물상세\t126508\tNULL\t아파트\tNULL\t484\t1269\tNULL\tNULL\tNULL\n2018-01-26\t509e706f-f2c7-4a4f-8f5d-7468c8be702a\t5d80de57-e0a5-4aa0-8db3-8e268caa0aa6\tview_item\t2018-01-26 10:31:18\t1516930277250\t아파트 매물상세\t124475\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t2f6b9126-99af-42ae-8754-a70ffda90e22\t4971b312-acb0-430a-a776-a963650b65d0\tview_item\t2018-01-26 23:19:19\t1516976356195\t아파트 매물상세\t62161\tNULL\t아파트\tNULL\t18295\t18295\tNULL\tNULL\tNULL\n2018-01-26\tbe56125e-e43e-4f77-ab5b-ee1658a39c89\tbbde849c-34b0-4e33-b48f-696eb21016a9\tview_item\t2018-01-26 10:46:36\t1516931194868\t아파트 매물상세\t84756\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tbfe90625-353f-49d1-b9ce-71b0f4e8cb2a\t5b8bb09a-7e0b-4b82-9d23-75d65f93986d\tview_item\t2018-01-26 23:36:02\t1516977360000\t아파트 매물상세\t68971\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t74e7357e-7cf8-4e9a-a425-f10ee17a3eb5\t2fa673af-8f40-427b-a65c-b10f88551537\tview_item\t2018-01-26 17:38:55\t1516955933132\t아파트 매물상세\t71776\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t43c26f6e-7876-480a-b541-d49b96f1a297\tb30c0099-7fb4-486a-a0c8-50b435f386f0\tview_item\t2018-01-26 11:15:36\t1516932934776\t아파트 매물상세\t122079\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t692e20db-79cf-4d10-89eb-d5051755967e\t349bb9c4-e1dd-4750-9a0a-d2277b1d8be8\tview_item\t2018-01-26 04:37:49\t1516909067464\t아파트 매물상세\t129183\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tc5961c71-2c83-41f7-8eba-37ed8979adee\tafc1d019-bc55-4c0c-913e-e411ca2a85ee\tview_item\t2018-01-26 14:31:51\t1516944709933\t아파트 매물상세\t69109\tNULL\t아파트\tNULL\t9167\t9167\tNULL\tNULL\tNULL\n2018-01-26\te766490a-719f-47ac-944c-2b56957407dd\td9dc16d7-c944-4dab-bc48-c2d32afb8b49\tview_item\t2018-01-26 09:03:02\t1516924980953\t아파트 매물상세\t83347\tNULL\t아파트\tNULL\t20679\t20679\tNULL\tNULL\tNULL\n2018-01-26\tba4085ac-a1c8-4da3-b4f8-2443e1e44c21\t48ccad24-8ddd-40f0-b4a2-8bb3803bbdf4\tview_item\t2018-01-26 17:25:07\t1516955105536\t아파트 매물상세\t83924\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tc4171f77-63b9-4ce3-9fe1-2bf78b40e47e\t287fc918-5c0b-4a32-af1f-d3ca51a65a6f\tview_item\t2018-01-26 17:42:11\t1516956129580\t아파트 매물상세\t124651\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t2f8ffa63-33e4-4d45-9184-bdbc06dcd80c\td28938a7-e382-4d5e-bba3-8f1d18747b51\tview_item\t2018-01-26 16:49:07\t1516952946836\t아파트 매물상세\t104158\tNULL\t아파트\tNULL\t19917\t19917\tNULL\tNULL\tNULL\n2018-01-26\t74f9f878-91d1-438f-b15f-9086c05d3993\t39a81cde-711b-430f-80cf-8023c2a363e0\tview_item\t2018-01-26 15:45:26\t1516949125045\t아파트 매물상세\t129470\tNULL\t아파트\tNULL\t2279\t2279\tNULL\tNULL\tNULL\n2018-01-26\ta8ff8f4c-d931-4e93-b740-d7555be4b2a2\t781d7057-2222-4e44-af8d-80405a11c124\tview_item\t2018-01-26 17:42:50\t1516956168415\t아파트 매물상세\t85286\tNULL\t아파트\tNULL\t3836\t3836\tNULL\tNULL\tNULL\n2018-01-26\t6c3b627c-24be-4a3e-8c0a-e2ba9bd7f8dd\tc89a6bfd-72ed-47b1-a188-73c87bcbf1f1\tview_item\t2018-01-26 04:32:03\t1516908722000\t아파트 매물상세\t58530\tNULL\t아파트\tNULL\t19062\t19062\tNULL\tNULL\tNULL\n2018-01-26\tbb815bfe-020d-44d6-b917-bf8ba93de5a6\t8fd7d832-ce0d-4780-b48c-407dc3aeb5df\tview_item\t2018-01-26 03:20:52\t1516904450893\t아파트 매물상세\t93434\tNULL\t아파트\tNULL\t10052\t10052\tNULL\tNULL\tNULL\n2018-01-26\te9b0956e-1e85-46ef-af78-bf36b16ac2a5\t254a28c1-6af5-43c0-a14a-4504ff60888b\tview_item\t2018-01-26 19:04:33\t1516961071550\t아파트 매물상세\t97133\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t36bf2748-e8d4-4bd7-ae62-cf2af85886cd\t7e436b58-d285-4aed-8c34-ab1614481be1\tview_item\t2018-01-26 19:09:40\t1516961378641\t아파트 매물상세\t98707\tNULL\t아파트\tNULL\t14387\t14387\tNULL\tNULL\tNULL\n2018-01-26\ta21a9145-6295-497a-8369-5a0a6d96177e\t2958ea3a-a286-4932-9f33-1b004d97ef80\tview_item\t2018-01-26 07:02:54\t1516917771665\t아파트 매물상세\t127906\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t28908674-cd7f-479b-8fb1-44a54990922b\t647a7974-23c7-4440-8cbc-1953bf11cba4\tview_item\t2018-01-26 12:21:32\t1516936890117\t아파트 매물상세\t131621\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t4d52f19a-6f3f-4403-bb55-4672a335ad56\t13b26f93-2305-41d4-aa16-67a14832c2f4\tview_item\t2018-01-26 10:14:21\t1516929259778\t아파트 매물상세\t97717\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t3113d2e5-6718-4cde-9ba2-bb945af2ac1b\tde719830-c5a0-43a7-93e9-e0ec69f1d5eb\tview_item\t2018-01-26 10:00:26\t1516928425686\t아파트 매물상세\t77824\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t15b9769f-3aed-432f-a5d2-eec9b009831c\t970d6a76-5ad1-480b-90a9-8eff9b471f12\tview_item\t2018-01-26 19:59:24\t1516964363868\t아파트 매물상세\t88823\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t054e1c84-1d5a-4b49-8108-0f3c2ce3b08b\tfa033ed6-aae1-4787-8e95-baddd4f10a9d\tview_item\t2018-01-26 22:45:17\t1516974314517\t아파트 매물상세\t94249\tNULL\t아파트\tNULL\t24537\t24537\tNULL\tNULL\tNULL\n2018-01-26\t11426c7a-095f-4893-b5ac-d4d6c7d7d6cf\t7e046a10-e255-4a0e-b8f2-bea081afa2e0\tview_item\t2018-01-26 21:14:30\t1516968871363\t아파트 매물상세\t70722\tNULL\t아파트\tNULL\t5280\t5280\tNULL\tNULL\tNULL\n2018-01-26\t757147f5-0441-4b1f-a35a-a94052b1e8f7\t1c754e8e-c658-4c95-b617-242ef1a391df\tview_item\t2018-01-26 15:06:02\t1516946760065\t아파트 매물상세\t115758\tNULL\t아파트\tNULL\t2089\t2089\tNULL\tNULL\tNULL\n2018-01-26\taf377033-5651-46e3-9fc3-250e38f5661c\t8fb4927a-3dba-4cca-83aa-55ea3a59f449\tview_item\t2018-01-26 21:13:08\t1516968786618\t아파트 매물상세\t122021\tNULL\t아파트\tNULL\t19245\t19245\tNULL\tNULL\tNULL\n2018-01-26\t5cf2b49e-9a28-4693-9112-8fa95bce4a5c\t3aad1c0e-ea9b-498e-82d9-9c0bb06f1e0e\tview_item\t2018-01-26 08:46:13\t1516923972192\t아파트 매물상세\t79559\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tfc258c9a-123e-4e19-bf66-f6a722a492f2\t989f8ee0-9866-4809-a9f6-ecc8bf325056\tview_item\t2018-01-26 19:09:19\t1516961357905\t아파트 매물상세\t126787\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t4b5e3dad-ac94-4aac-aca3-981336732b2b\t35dc3b6b-74d0-4c36-bcc7-ba6064e87017\tview_item\t2018-01-26 16:57:43\t1516953460274\t아파트 매물상세\t127676\tNULL\t아파트\tNULL\t5981\t5981\tNULL\tNULL\tNULL\n2018-01-26\t9687ae09-6c51-4b65-99ef-2da419134f55\t54c133c2-5f21-4d90-83cb-843d293bc16f\tview_item\t2018-01-26 22:47:26\t1516974444937\t아파트 매물상세\t71181\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\td872066a-8fe7-438f-80eb-4aa38ddacc3f\t89c29075-3a2c-4dc4-b6c9-ae7399819fea\tview_item\t2018-01-26 11:38:29\t1516934308040\t아파트 매물상세\t59286\tNULL\t아파트\tNULL\t17853\t17853\tNULL\tNULL\tNULL\n2018-01-26\t9ef99355-d363-40c7-8b42-f9db6b540680\t7003c823-df56-405a-92df-ea0a95bf6b01\tview_item\t2018-01-26 17:40:38\t1516956037374\t아파트 매물상세\t80972\tNULL\t아파트\tNULL\t18839\t18839\tNULL\tNULL\tNULL\n2018-01-26\t3263d20c-c189-4391-8841-30b3aa11e5dc\t5fdb4fdd-5b4c-474a-a2f2-1222c7cd396e\tview_item\t2018-01-26 04:46:41\t1516909600444\t아파트 매물상세\t54755\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tAFEFF523-E9B6-40C8-88D8-91F6A79F5E97\tAFEFF523-E9B6-40C8-88D8-91F6A79F5E97\tview_item\t2018-01-26 14:07:54\t1516943274\t아파트 매물상세\t112614\tNULL\t아파트\tNULL\t6064\t153480\tNULL\tNULL\tNULL\n2018-01-26\t5de81c1d-a1e6-4611-bdca-2aa95510c87c\t73df419b-2ce2-4b19-a87a-0d4832095fc9\tview_item\t2018-01-26 21:22:21\t1516969339277\t아파트 매물상세\t126304\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t476afa56-8efe-4091-901a-896bed76f9ac\t247416cc-cc38-45f8-8d15-a978564bee0b\tview_item\t2018-01-26 20:41:33\t1516966894604\t아파트 매물상세\t114756\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tef27feb5-1d92-4b74-b91a-18146246fbdc\t7536449f-7826-465b-9f39-4ee207b882bb\tview_item\t2018-01-26 09:46:31\t1516927588128\t아파트 매물상세\t115307\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tc90b4e09-a199-459b-9f77-5b8c8ad23a60\tc4c3c3a7-35ed-4dc5-87bd-26e06af7e9d4\tview_item\t2018-01-26 01:41:53\t1516898511295\t아파트 매물상세\t71160\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t0ad80d7c-cd00-4397-bdc8-919df88c539f\t3cfc72a6-90ce-4c46-872d-2af5216bf9eb\tview_item\t2018-01-26 02:20:46\t1516900844374\t아파트 매물상세\t128201\tNULL\t아파트\tNULL\t1600\t1600\tNULL\tNULL\tNULL\n2018-01-26\t7f910925-2aae-4a5b-bb3d-ec5d0d29b419\tc462f59b-19d2-4ec6-8d41-5a5621e0eee5\tview_item\t2018-01-26 17:07:27\t1516954047423\t아파트 매물상세\t124749\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tdb2a6282-291b-4361-811d-42c00e4e7502\t55c80adf-aab3-4f60-812a-94cab26d379a\tview_item\t2018-01-26 08:26:55\t1516922813832\t아파트 매물상세\t113604\tNULL\t아파트\tNULL\t5381\t5381\tNULL\tNULL\tNULL\n2018-01-26\tb2d96024-2d90-4cbb-a683-e6eda8b91c73\tf124a25f-0045-4f9a-8c68-e1e0168045b2\tview_item\t2018-01-26 17:56:19\t1516956980284\t아파트 매물상세\t100252\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t97f682bd-45d5-41bb-a6c4-d6ae86f021c9\te04c13fc-5297-4103-be01-16a94ecf80f4\tview_item\t2018-01-26 13:02:31\t1516939350444\t아파트 매물상세\t94571\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t000c7bb0-ca85-4f8e-aa98-73e50593a4ac\t0c72de00-0500-4a40-84ed-fbc0d35f0c60\tview_item\t2018-01-26 20:28:54\t1516966133407\t아파트 매물상세\t84484\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tbf89298d-837f-4529-bad0-1abd3b88ea26\teb60652b-ff10-42c2-94cf-a2684251467e\tview_item\t2018-01-26 01:28:41\t1516897719569\t아파트 매물상세\t83628\tNULL\t아파트\tNULL\t16880\t16880\tNULL\tNULL\tNULL\n2018-01-26\t8e899a36-692a-42d3-9932-64d405a974f3\td212158d-b932-4839-98a3-b3561f5cbea4\tview_item\t2018-01-26 22:37:18\t1516973836585\t아파트 매물상세\t89340\tNULL\t아파트\tNULL\t14568\t14568\tNULL\tNULL\tNULL\n2018-01-26\t940b3fb3-e40a-45a6-9732-58ef36842c6d\tb687ff18-1638-47a6-adbf-8945cac31b48\tview_item\t2018-01-26 11:50:45\t1516935042645\t아파트 매물상세\t118194\tNULL\t아파트\tNULL\t36411\t36411\tNULL\tNULL\tNULL\n2018-01-26\t64a689ef-c20f-4ced-a9f7-effb20b0cdc8\t7c536cb2-1122-4e54-b103-58ba00774ff5\tview_item\t2018-01-26 13:41:40\t1516941716804\t아파트 매물상세\t134125\tNULL\t아파트\tNULL\t1511\t1511\tNULL\tNULL\tNULL\n2018-01-26\t7ad34486-a001-44df-96cf-8412942277ae\t66e873bf-560c-4241-a7ba-dd91b598bcf8\tview_item\t2018-01-26 16:26:56\t1516951614223\t아파트 매물상세\t130884\tNULL\t아파트\tNULL\t754\t754\tNULL\tNULL\tNULL\n2018-01-26\tfd055ea8-fa1a-41cb-a17b-6f48e839a512\t287cd3fe-435d-470d-b3d3-13ff59a521b7\tview_item\t2018-01-26 13:23:22\t1516940599839\t아파트 매물상세\t68472\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t04ca3943-e250-41d6-adc6-8e1a60af18c4\t58596788-7023-43d7-b8ae-6681dd7d8131\tview_item\t2018-01-26 23:40:37\t1516977636176\t아파트 매물상세\t123746\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t22dd1acd-b3f9-47a5-a888-871fc788a40a\t06423734-d2d4-4222-81ac-1d437a7c9692\tview_item\t2018-01-26 00:36:34\t1516894592528\t아파트 매물상세\t79133\tNULL\t아파트\tNULL\t2114\t2114\tNULL\tNULL\tNULL\n2018-01-26\t91f32c91-4a41-4a1b-9e52-2ba8b2e52bde\tfc921f06-7759-42d0-b85d-69817bf28841\tview_item\t2018-01-26 00:53:03\t1516895582270\t아파트 매물상세\t90687\tNULL\t아파트\tNULL\t2324\t2324\tNULL\tNULL\tNULL\n2018-01-26\t9b809d38-1ec0-4079-b869-a5dfb30ea11d\t8a1e29de-935c-4743-b449-372e192713ff\tview_item\t2018-01-26 21:02:11\t1516968129810\t아파트 매물상세\t122239\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tfa08b97f-72ee-4c2f-be54-1a51d2b64468\tcff2da24-d1f4-4dd1-bd9a-fe04422789c5\tview_item\t2018-01-26 00:11:01\t1516893059952\t아파트 매물상세\t81177\tNULL\t아파트\tNULL\t6572\t6572\tNULL\tNULL\tNULL\n2018-01-26\tac033bff-d711-4735-a456-b8fde0a273dd\tec49bbc7-02a9-4006-8ca4-668d10e5896c\tview_item\t2018-01-26 19:49:14\t1516963752151\t아파트 매물상세\t88040\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tcc0c2369-ba62-41fb-a04c-ced35802d2f7\t5f118ae5-ea74-4905-ba31-3a9564d0af88\tview_item\t2018-01-26 20:12:05\t1516965122962\t아파트 매물상세\t73026\tNULL\t아파트\tNULL\t1600\t1600\tNULL\tNULL\tNULL\n2018-01-26\t7547de07-49cc-44d1-a57b-59fbc4e7abb8\t1faa7c16-1537-4464-9a82-63aeb9e72d94\tview_item\t2018-01-26 10:20:00\t1516929599677\t아파트 매물상세\t127145\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t97431f5a-4bec-4f4e-93a7-e4c156119805\t8b0f9fc4-8c83-4878-80a6-012fd440bcdd\tview_item\t2018-01-26 18:17:45\t1516958263624\t아파트 매물상세\t114146\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t84556b1c-55c7-4b32-a8bc-c176b196a20f\t8e1f97ff-694e-46a6-868e-c180d57d999a\tview_item\t2018-01-26 20:41:33\t1516966890480\t아파트 매물상세\t115677\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\td959f98c-e755-4cdd-9cf9-429e3c34aa33\tb4485f59-67ae-4678-a888-cefda505918d\tview_item\t2018-01-26 00:12:39\t1516893158730\t아파트 매물상세\t59758\tNULL\t아파트\tNULL\t1855\t1855\tNULL\tNULL\tNULL\n2018-01-26\t65f03aa8-e01a-4d3e-8148-3d75b2a0225f\td3a75df8-c192-415d-bf67-269ce4e4c98a\tview_item\t2018-01-26 21:47:25\t1516970843273\t아파트 매물상세\t84052\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t76fa9e1b-aaf0-4bc3-a0b7-ccc39ceea779\t163583fa-f564-4b90-b69c-c3b1a8de4634\tview_item\t2018-01-26 00:10:53\t1516893051913\t아파트 매물상세\t76658\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\ta4bb914d-6ccb-4953-9b5e-53fd15fe3911\t3f54160e-cc6f-47fb-bb3f-b2d4e9063b5f\tview_item\t2018-01-26 18:57:06\t1516960623725\t아파트 매물상세\t69386\tNULL\t아파트\tNULL\t2979\t2979\tNULL\tNULL\tNULL\n2018-01-26\t6805b131-0932-4b67-a8d3-72de49a06488\td3324338-94c4-4da4-b34e-f5e6576ccc33\tview_item\t2018-01-26 19:46:30\t1516963589369\t아파트 매물상세\t130845\tNULL\t아파트\tNULL\t85\t85\tNULL\tNULL\tNULL\n2018-01-26\t3ededd7a-680b-42c9-92fd-71723c748f6b\td61d44f4-d062-4f58-96ca-4f971e08d57e\tview_item\t2018-01-26 21:53:13\t1516971192176\t아파트 매물상세\t133845\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t866d713c-1768-4397-a54a-7748a37b176e\tc9202958-5b78-40b5-81ff-1718d4b5d070\tview_item\t2018-01-26 16:40:32\t1516952430839\t아파트 매물상세\t119808\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tf74f9677-b74b-48c1-8eb5-50c01d542291\t17334167-d56d-45ab-880b-111c2f3c13eb\tview_item\t2018-01-26 23:17:58\t1516976277687\t아파트 매물상세\t77224\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t347c0068-1c3d-476c-ab10-7410e5df50c1\tec4597f5-a002-4e57-9005-f0832dbcbc24\tview_item\t2018-01-26 01:24:50\t1516897489154\t아파트 매물상세\t0\tNULL\t아파트\tNULL\t7251\t7251\tNULL\tNULL\tNULL\n2018-01-26\te41140eb-e801-42f6-9a3b-3f725c87b0cb\ta92006fb-0111-477f-a87c-356b6392b8c9\tview_item\t2018-01-26 08:58:29\t1516924708399\t아파트 매물상세\t108338\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t5b4b8c38-e61f-428a-8c14-21e5f13bbf69\ta17400ed-85ff-4b29-95f6-e73c2df2a3e6\tview_item\t2018-01-26 14:31:28\t1516944691363\t아파트 매물상세\t89890\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t63b3c55c-71f3-4571-99a1-c4949641bedb\t6a217a0e-aad5-415d-a83a-ff4bd92c3150\tview_item\t2018-01-26 00:50:55\t1516895459476\t아파트 매물상세\t54752\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t944b75cf-7e8d-49ad-b343-304de6c66186\tdcdedcca-7104-468f-bb2e-8a25faa4c0bb\tview_item\t2018-01-26 13:12:44\t1516939962024\t아파트 매물상세\t125477\tNULL\t아파트\tNULL\t17577\t17577\tNULL\tNULL\tNULL\n2018-01-26\t6bc5a8a1-71e8-4466-9250-394d119da4e4\t3bc7964a-4d14-486f-b44e-e95c56092e74\tview_item\t2018-01-26 23:44:00\t1516977837893\t아파트 매물상세\t86472\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t7c330006-6186-4595-8c20-9e4374ee4ce5\t2c4d8030-dc99-4f53-8a45-fcbb4fbd3517\tview_item\t2018-01-26 20:56:38\t1516967796721\t아파트 매물상세\t118337\tNULL\t아파트\tNULL\t7556\t7556\tNULL\tNULL\tNULL\n2018-01-26\tdba04f71-c728-462b-a61c-6244af88afbe\tab0fe5f8-b1f2-4759-8ae9-d003c5cdb81e\tview_item\t2018-01-26 05:27:21\t1516912039868\t아파트 매물상세\t93564\tNULL\t아파트\tNULL\t1881\t1881\tNULL\tNULL\tNULL\n2018-01-26\t000c7bb0-ca85-4f8e-aa98-73e50593a4ac\t0c72de00-0500-4a40-84ed-fbc0d35f0c60\tview_item\t2018-01-26 20:33:33\t1516966412085\t아파트 매물상세\t95945\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tb04df728-4500-45b6-87e3-5deeefe6d4aa\t024736c3-3ca9-426d-849f-b1136322ce2f\tview_item\t2018-01-26 20:55:58\t1516967757762\t아파트 매물상세\t56827\tNULL\t아파트\tNULL\t747\t747\tNULL\tNULL\tNULL\n2018-01-26\t2d3d7ffe-0f86-43fc-b4fa-c56132ed625c\t53aefe94-9f35-4ee8-b4d9-eac36536a527\tview_item\t2018-01-26 20:15:02\t1516965300326\t아파트 매물상세\t112982\tNULL\t아파트\tNULL\t6904\t6904\tNULL\tNULL\tNULL\n2018-01-26\t811e14ed-bf1b-4232-bfac-a554d11bc64c\t0164e1bd-7504-4354-98b5-e3f38d478df6\tview_item\t2018-01-26 16:12:32\t1516950750724\t아파트 매물상세\t134240\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tbd84e7b6-8ae4-4dc2-82e7-2f28da0be199\tb576179c-fbcd-4cd8-a627-79ffc8a6b42f\tview_item\t2018-01-26 17:45:03\t1516956302415\t아파트 매물상세\t94785\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t4684d514-32ce-4332-a169-4a1784db9818\tb2a9d032-8fd4-406c-ae94-dfc00785a3c5\tview_item\t2018-01-26 21:40:01\t1516970399146\t아파트 매물상세\t109113\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t36d9a7e0-2f37-4351-b5cf-9d385129094b\t8fc4e7e5-9bf6-4eae-b5eb-1a0acbb01bcd\tview_item\t2018-01-26 09:36:29\t1516926986926\t아파트 매물상세\t108365\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tf345b8e5-9b96-470c-8c1e-03089cf5cd3d\t28d537fc-28d9-4bfe-8e49-882f69d8c61d\tview_item\t2018-01-26 07:50:57\t1516920655140\t아파트 매물상세\t104890\tNULL\t아파트\tNULL\t10341\t10341\tNULL\tNULL\tNULL\n2018-01-26\te899c210-b21e-430e-877b-f494cabd31c9\t860a5227-6d5b-4e0b-ad39-3b55517aeb94\tview_item\t2018-01-26 15:40:06\t1516948804525\t아파트 매물상세\t86927\tNULL\t아파트\tNULL\t2817\t2817\tNULL\tNULL\tNULL\n2018-01-26\t0a1aac5b-1079-490a-9952-4e52a02d3e7f\tdd0009da-f9b4-4899-ae34-634d60a7b7ba\tview_item\t2018-01-26 18:48:01\t1516960080526\t아파트 매물상세\t134730\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\td99c7efb-3ddf-414b-915c-719155667f03\tb4b675fa-5467-4005-a427-dafdedd51179\tview_item\t2018-01-26 13:18:25\t1516940308147\t아파트 매물상세\t88984\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t4e25a05e-fe3d-4705-a700-b338bcf01bf7\tb570fd19-c9f9-4401-a914-1001601b39b3\tview_item\t2018-01-26 21:11:23\t1516968681644\t아파트 매물상세\t110591\tNULL\t아파트\tNULL\t2475\t2475\tNULL\tNULL\tNULL\n2018-01-26\t59248bc9-1318-443c-9ffb-ad7b0e562d7b\t3bc97948-a47d-45ca-a85f-2a7f2710ccbf\tview_item\t2018-01-26 20:54:56\t1516967697119\t아파트 매물상세\t101054\tNULL\t아파트\tNULL\t19916\t19916\tNULL\tNULL\tNULL\n2018-01-26\t8f4c3b52-5c1e-4724-bdf0-e61269a1a573\t731dd92f-a073-4140-97d8-67236be786b0\tview_item\t2018-01-26 15:59:08\t1516949946487\t아파트 매물상세\t111639\tNULL\t아파트\tNULL\t26455\t26455\tNULL\tNULL\tNULL\n2018-01-26\t155dcf06-b5cd-4922-ab03-2408ef5f6912\td8844f7f-f8f5-47fe-b955-a825df12604b\tview_item\t2018-01-26 15:55:07\t1516949705758\t아파트 매물상세\t101222\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t17e8676d-de70-426c-b76f-d75e5e19e55f\t92134683-0627-42e4-bff5-446686e71fba\tview_item\t2018-01-26 11:02:43\t1516932162506\t아파트 매물상세\t115981\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t68F9AF29-63E8-4454-B094-CD154D92EC02\t555F75D4-C907-473E-A8F1-B39A54BA8F2D\tview_item\t2018-01-26 20:04:03\t1516964643\t아파트 매물상세\t121446\tNULL\t아파트\tNULL\t37037\t152495\tNULL\tNULL\tNULL\n2018-01-26\tc82a82dc-f86b-4e59-af04-5d10145f0171\t72b48aca-1973-411c-a060-714bf0143797\tview_item\t2018-01-26 20:29:13\t1516966151935\t아파트 매물상세\t128744\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t357d6e53-66c3-4e72-a318-c14839d87195\t62b96410-f116-47a5-b48a-87485d675318\tview_item\t2018-01-26 17:37:30\t1516955848419\t아파트 매물상세\t61567\tNULL\t아파트\tNULL\t24376\t24376\tNULL\tNULL\tNULL\n2018-01-26\t68d04f22-cfbc-4ef6-bdd6-e5734f3b66f4\t52215fa0-709c-4bf5-bef9-7659cba41223\tview_item\t2018-01-26 06:13:47\t1516914825911\t아파트 매물상세\t83765\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t393c6d3a-68f4-4b7a-899b-1f1dfe32499c\t6d82447d-e633-4a3b-8813-639edd858ba1\tview_item\t2018-01-26 00:54:50\t1516895693816\t아파트 매물상세\t91860\tNULL\t아파트\tNULL\t36411\t36411\tNULL\tNULL\tNULL\n2018-01-26\t9a2a4bc6-c172-4935-892f-0d5c86cef20c\t2ef93587-a814-4523-bde9-4cc4548c0751\tview_item\t2018-01-26 13:23:44\t1516940622298\t아파트 매물상세\t130423\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\td98ae608-934d-423e-9e01-b95ed78c49d8\tf518372d-1d5f-4555-89aa-e9fd90565262\tview_item\t2018-01-26 22:39:07\t1516973944926\t아파트 매물상세\t108983\tNULL\t아파트\tNULL\t2817\t2817\tNULL\tNULL\tNULL\n2018-01-26\tabe4d7ee-09c9-41cb-9f60-dae466bf487c\t3a55aaf8-8066-4a2a-8fcf-de622acac42d\tview_item\t2018-01-26 19:17:00\t1516961823273\t아파트 매물상세\t127569\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\taa293141-bdd4-464b-8141-d34ea1cf4da9\tc35c42d7-c587-4f2c-a731-63f0c094b46f\tview_item\t2018-01-26 23:04:52\t1516975491168\t아파트 매물상세\t121447\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t9687ae09-6c51-4b65-99ef-2da419134f55\t54c133c2-5f21-4d90-83cb-843d293bc16f\tview_item\t2018-01-26 21:02:10\t1516968128951\t아파트 매물상세\t121384\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t3113d2e5-6718-4cde-9ba2-bb945af2ac1b\tde719830-c5a0-43a7-93e9-e0ec69f1d5eb\tview_item\t2018-01-26 21:45:37\t1516970736535\t아파트 매물상세\t132733\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\td261b6e5-1ce8-4b9b-87c3-e9ce7b84f4f1\t738103cc-3a58-493a-a0ab-eb3dee06ed88\tview_item\t2018-01-26 12:57:04\t1516939022356\t아파트 매물상세\t129649\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t9C9D5A92-E2E6-4904-BFCC-4B011F9A1D94\t9579F9C7-CD90-4D4B-9E4D-EFC80ACD719C\tecommerce_purchase\t2018-01-26 10:05:16\t1516928716\t아파트 매물상세\t101439\t전화\t아파트\t1\t1021\t2707\t2774564\tNULL\tNULL\n2018-01-26\ta6356bf8-8c2a-4c4a-a310-dbace8f09c19\t7b0b315f-4734-463b-b1ac-a051eff71846\tview_item\t2018-01-26 10:35:09\t1516930507273\t아파트 매물상세\t91230\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t50B8A26F-257A-4D74-AA6B-82F6501922F8\t5CA6C0BF-D481-465D-853A-F1FF402CD0E3\tview_item\t2018-01-26 18:34:16\t1516959256\t아파트 매물상세\t76903\tNULL\t아파트\tNULL\t6663\t34931\tNULL\tNULL\tNULL\n2018-01-26\tbe56125e-e43e-4f77-ab5b-ee1658a39c89\tbbde849c-34b0-4e33-b48f-696eb21016a9\tview_item\t2018-01-26 10:43:27\t1516931005939\t아파트 매물상세\t91332\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\td8963cd0-7ae4-4424-a767-992f374030e0\tc52b4cd8-7aa2-42de-ab71-a52426133048\tview_item\t2018-01-26 13:39:06\t1516941544679\t아파트 매물상세\t72131\tNULL\t아파트\tNULL\t20183\t20183\tNULL\tNULL\tNULL\n2018-01-26\t90e1f516-ee77-4f18-9472-df8f80aa356d\t8c973046-de27-46b1-9386-9af96e7e1399\tview_item\t2018-01-26 16:35:54\t1516952152536\t아파트 매물상세\t79977\tNULL\t아파트\tNULL\t15041\t15041\tNULL\tNULL\tNULL\n2018-01-26\ta06480b7-d3d7-45aa-b06f-4999be10d489\t4524b1ce-a717-473d-a122-d176b2f4c4a7\tview_item\t2018-01-26 17:56:46\t1516957004221\t아파트 매물상세\t128419\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t6561c560-544e-4767-9128-024e0071aef2\teda8c8a9-a8e2-4037-985e-c4e517a67c42\tview_item\t2018-01-26 23:44:26\t1516977864181\t아파트 매물상세\t134031\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t6cbd57a1-5532-41dd-b721-de9be1a37280\t1e1257f3-a317-42ee-b6d6-3dde5702c966\tview_item\t2018-01-26 21:18:03\t1516969081606\t아파트 매물상세\t118217\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t02dced03-9e24-44b9-8a76-4fe213fef62f\tef445cff-2480-4581-b587-8cae1df84607\tview_item\t2018-01-26 19:30:10\t1516962608059\t아파트 매물상세\t104172\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t1b5e9e0f-68dc-48e3-9e91-d7139ae34faf\t3af0a19e-5c63-4ced-8555-36dddf7b311a\tview_item\t2018-01-26 12:08:37\t1516936120693\t아파트 매물상세\t117037\tNULL\t아파트\tNULL\t6637\t6637\tNULL\tNULL\tNULL\n2018-01-26\t318cc65d-ba98-473a-932a-5134c74ce928\t650551a0-3a22-410d-a825-8d3772e1460f\tview_item\t2018-01-26 08:22:53\t1516922572045\t아파트 매물상세\t89512\tNULL\t아파트\tNULL\t6572\t6572\tNULL\tNULL\tNULL\n2018-01-26\t76add7e1-67ca-4221-add6-bf11e6d6914d\t2967615e-b328-44cb-a546-662f8898a9e0\tview_item\t2018-01-26 10:47:10\t1516931228093\t아파트 매물상세\t70959\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tad6c79e5-0845-484d-9c42-46fc151bfb79\ta4b73002-5a06-40d2-bfbb-67e97c8436d8\tview_item\t2018-01-26 20:14:20\t1516965258256\t아파트 매물상세\t59912\tNULL\t아파트\tNULL\t25372\t25372\tNULL\tNULL\tNULL\n2018-01-26\t22f49934-1691-4ca9-95fe-8ee83b60006a\t1541b0e6-41ee-4ded-aaaf-da4333bbe474\tview_item\t2018-01-26 23:52:38\t1516978361257\t아파트 매물상세\t67230\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t89ecb108-732e-4ec2-b22d-2d934b5d9819\t4144d902-4a09-491c-af2a-c69c88110903\tview_item\t2018-01-26 21:42:28\t1516970546904\t아파트 매물상세\t109582\tNULL\t아파트\tNULL\t5498\t5498\tNULL\tNULL\tNULL\n2018-01-26\t87c0ee2a-3708-48bb-aa17-4fafafc7ecd1\t0512961e-528c-4eed-a554-4cba7d257d8c\tview_item\t2018-01-26 21:27:16\t1516969634919\t아파트 매물상세\t100393\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t1ee37747-c5ff-4e53-bfb5-03881f5cc7b0\tda4aea83-4ac0-4754-b28c-5eb2969d593d\tview_item\t2018-01-26 18:37:48\t1516959466813\t아파트 매물상세\t115935\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t8c7752c5-d589-4534-a4bf-215fc8410180\t52b75cb8-4635-46a5-8d3c-0c433d643f2c\tview_item\t2018-01-26 19:07:12\t1516961230521\t아파트 매물상세\t100788\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t12f0a81b-d276-430c-9460-4c48cb297a82\t6eb8ac65-d0c1-4c78-97c0-11e2f914a93b\tview_item\t2018-01-26 03:37:03\t1516905421438\t아파트 매물상세\t61649\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t47649E58-2B87-46A1-AC7A-CDAFEF1DAF7D\t02D42C6B-7196-4C9D-AEB9-49E7678F3B47\tview_item\t2018-01-26 22:56:20\t1516974980\t아파트 매물상세\t96550\tNULL\t아파트\tNULL\t15411\t47757\tNULL\tNULL\tNULL\n2018-01-26\t20f3f5d8-df56-48b6-999d-3c73fedf922b\t902e5e7e-de68-4409-96c9-f5bb010a705e\tview_item\t2018-01-26 22:35:42\t1516973740987\t아파트 매물상세\t106414\tNULL\t아파트\tNULL\t16665\t16665\tNULL\tNULL\tNULL\n2018-01-26\tf93e3be1-6542-4963-af98-9a2aaaf697e2\ta22fa9c6-4608-4e98-955f-c347422eda29\tview_item\t2018-01-26 22:51:54\t1516974712863\t아파트 매물상세\t91150\tNULL\t아파트\tNULL\t20581\t20581\tNULL\tNULL\tNULL\n2018-01-26\t8d09d66a-5a70-452a-a74d-0cf8e1a4a51b\tac31e3b0-0624-41a2-9519-85e68a786e9f\tview_item\t2018-01-26 20:12:37\t1516965156541\t아파트 매물상세\t85905\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t5d56c94a-6d5f-49eb-b568-d1183a7490b5\td3353e3b-d0a1-494d-8595-8c5cc2d2a1b4\tview_item\t2018-01-26 19:58:25\t1516964303212\t아파트 매물상세\t119528\tNULL\t아파트\tNULL\t5686\t5686\tNULL\tNULL\tNULL\n2018-01-26\t969451af-12d8-4d05-9207-1a270ce06d7b\t123e6587-3967-4644-8a5a-457abbb754fa\tview_item\t2018-01-26 18:41:09\t1516959668736\t아파트 매물상세\t128005\tNULL\t아파트\tNULL\t33715\t33715\tNULL\tNULL\tNULL\n2018-01-26\t0bd07f01-91d5-4ed3-815a-04eeb11cf0b8\tfd0cf870-52cf-4d32-a67a-68bf9c7908a1\tview_item\t2018-01-26 21:52:52\t1516971169330\t아파트 매물상세\t115053\tNULL\t아파트\tNULL\t1052\t1052\tNULL\tNULL\tNULL\n2018-01-26\t9d5a999b-e870-44a4-8fe5-9c82eecd85b1\tf0e67bf9-3c75-4c28-a7a0-16892100af6a\tview_item\t2018-01-26 17:19:51\t1516954788258\t아파트 매물상세\t93038\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t2f6b9126-99af-42ae-8754-a70ffda90e22\t4971b312-acb0-430a-a776-a963650b65d0\tview_item\t2018-01-26 23:16:39\t1516976196957\t아파트 매물상세\t59204\tNULL\t아파트\tNULL\t13732\t13732\tNULL\tNULL\tNULL\n2018-01-26\t53e2839e-2f57-4c44-b08c-acc2b1fcce23\tbfc4f26f-c770-40c2-b435-23f6e42625d3\tview_item\t2018-01-26 13:44:05\t1516941843988\t아파트 매물상세\t121006\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tc4171f77-63b9-4ce3-9fe1-2bf78b40e47e\t287fc918-5c0b-4a32-af1f-d3ca51a65a6f\tview_item\t2018-01-26 17:42:29\t1516956148114\t아파트 매물상세\t83991\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tc28dadba-b1cc-4ddf-baf9-a26452826dff\t3890e37a-43f1-4c30-bb91-6b13903c4611\tview_item\t2018-01-26 23:54:57\t1516978496593\t아파트 매물상세\t125358\tNULL\t아파트\tNULL\t232\t232\tNULL\tNULL\tNULL\n2018-01-26\td5776aef-71c6-44bd-95d6-e103e2d244d2\tb9143a83-a9ba-4349-bce4-fd4ef96b86ed\tview_item\t2018-01-26 00:50:47\t1516895446612\t아파트 매물상세\t117514\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tc929100e-8cc7-4850-be38-f01fed1ebe99\tbf2720b1-709f-45bf-801b-2982a8e8d972\tview_item\t2018-01-26 10:55:07\t1516931706030\t아파트 매물상세\t110630\tNULL\t아파트\tNULL\t2478\t2478\tNULL\tNULL\tNULL\n2018-01-26\t9917c21a-2da2-483a-9206-6b83347784f0\te4840a58-0fbb-4737-96b2-89cff70cde80\tview_item\t2018-01-26 21:01:33\t1516968092055\t아파트 매물상세\t56127\tNULL\t아파트\tNULL\t2732\t2732\tNULL\tNULL\tNULL\n2018-01-26\t7fb4d1c7-01ab-420e-8b16-af29fde18662\t491c5321-f396-45fa-9d77-795a3d2ce102\tview_item\t2018-01-26 19:27:19\t1516962437446\t아파트 매물상세\t92414\tNULL\t아파트\tNULL\t19455\t19455\tNULL\tNULL\tNULL\n2018-01-26\tfbd64575-1a62-4f96-a1ec-e4e337d8621a\te3c9fe2f-ec54-4b3e-816e-1f8bb104541a\tview_item\t2018-01-26 10:42:29\t1516930948885\t아파트 매물상세\t62896\tNULL\t아파트\tNULL\t5363\t5363\tNULL\tNULL\tNULL\n2018-01-26\tc7262089-7d97-4c57-96a2-95ec68aae24c\t80aac9a9-ea69-4367-bfd9-d6e5f35f57f8\tview_item\t2018-01-26 21:02:56\t1516968174895\t아파트 매물상세\t63357\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tca395fc5-100b-4126-b630-50c1b0b6a90b\t63925ec5-af32-4a19-8c33-43a9e709340a\tview_item\t2018-01-26 13:08:20\t1516939697491\t아파트 매물상세\t105310\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t2fe2459d-8251-4010-b91b-c2469a4a3784\t8811b99a-45c7-4662-9fc0-4254055c081b\tview_item\t2018-01-26 14:37:54\t1516945074289\t아파트 매물상세\t89924\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t5eff0027-355d-4e84-9748-4fd1a733afa3\t4fd69184-9434-4aac-9130-fb0527f9c5b1\tview_item\t2018-01-26 19:41:16\t1516963273185\t아파트 매물상세\t122522\tNULL\t아파트\tNULL\t1769\t1769\tNULL\tNULL\tNULL\n2018-01-26\tdeb1f14a-c7d5-4b42-b0e2-355ef391bf66\tb8176d89-07de-4769-88b3-73ea0badc5dc\tview_item\t2018-01-26 14:35:04\t1516944903412\t아파트 매물상세\t67849\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\ta86620a1-d3c1-4844-adee-5e42594f511e\tabc81af0-156a-42c9-94cf-bd45c8504034\tview_item\t2018-01-26 00:57:43\t1516895860659\t아파트 매물상세\t60552\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t12f0a81b-d276-430c-9460-4c48cb297a82\t6eb8ac65-d0c1-4c78-97c0-11e2f914a93b\tview_item\t2018-01-26 03:36:14\t1516905372460\t아파트 매물상세\t66471\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t99a7f0e3-1dba-4b8d-b773-94362c24db14\te92dd31d-6fa0-4f24-8dca-d769eb8cc467\tview_item\t2018-01-26 00:46:10\t1516895169314\t아파트 매물상세\t96444\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t58346a67-89da-47f9-a494-584c4c501a8a\t1a3f322a-17e4-43e6-a72a-f0de2443045b\tview_item\t2018-01-26 23:12:13\t1516975936988\t아파트 매물상세\t96305\tNULL\t아파트\tNULL\t17299\t17299\tNULL\tNULL\tNULL\n2018-01-26\t2767d61c-0972-4482-adad-c7f369d92c6a\t0083782c-b32a-4251-8ab3-1fdac1b3b630\tview_item\t2018-01-26 14:05:29\t1516943127756\t아파트 매물상세\t57784\tNULL\t아파트\tNULL\t18727\t18727\tNULL\tNULL\tNULL\n2018-01-26\t325a2a4f-775f-4ca4-ae53-e44553551a99\t36e91a0c-fc1f-4bf3-824f-96f961d70f06\tview_item\t2018-01-26 07:55:38\t1516920935468\t아파트 매물상세\t104697\tNULL\t아파트\tNULL\t4956\t4956\tNULL\tNULL\tNULL\n2018-01-26\tc8134327-b986-44f6-9738-b38abc83bef8\tbf4b4371-c599-4f32-81ab-9feae5b56c1c\tview_item\t2018-01-26 17:17:47\t1516954667024\t아파트 매물상세\t134447\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tdad2980f-498e-4f5d-ba1a-1e0b8af68afa\t67ef62ed-70da-43a1-8188-17a20d26874b\tview_item\t2018-01-26 20:38:26\t1516966705009\t아파트 매물상세\t117657\tNULL\t아파트\tNULL\t11853\t11853\tNULL\tNULL\tNULL\n2018-01-26\t158b5a24-f100-4fd4-a56f-08b728847e45\t956589bc-5b2b-4fc8-9ef2-0e3d48ec8426\tview_item\t2018-01-26 09:18:39\t1516925922019\t아파트 매물상세\t107647\tNULL\t아파트\tNULL\t17016\t17016\tNULL\tNULL\tNULL\n2018-01-26\td3f42fa4-3161-4a39-a87a-df3d884583b1\t1f3bfc23-e6b0-439d-9424-263caf26d3e9\tview_item\t2018-01-26 21:20:19\t1516969217824\t아파트 매물상세\t80964\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t38b5b079-0e45-498e-b890-988e1b9e36e8\tf60fd664-817c-479e-b549-69009ba10cef\tview_item\t2018-01-26 18:26:05\t1516958763360\t아파트 매물상세\t86182\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\td7ebe7f9-6aee-4fce-aea9-9cf7cb8ab075\ta07abb33-0dc1-4df1-8caa-c81206340760\tview_item\t2018-01-26 16:02:35\t1516950155649\t아파트 매물상세\t125452\tNULL\t아파트\tNULL\t1150\t1150\tNULL\tNULL\tNULL\n2018-01-26\tc8134327-b986-44f6-9738-b38abc83bef8\tbf4b4371-c599-4f32-81ab-9feae5b56c1c\tview_item\t2018-01-26 17:22:13\t1516954932841\t아파트 매물상세\t118789\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tbe558b38-cd1b-4a0b-8ca8-fde6bfbedbef\t0e381c96-da50-422f-a945-8e2e8e6bbb9b\tview_item\t2018-01-26 17:05:46\t1516953944702\t아파트 매물상세\t86159\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t21fc4344-cfda-4cc2-9e41-b4893a51154d\t5d904fc9-308f-4314-b2fe-3830281f43f3\tview_item\t2018-01-26 20:20:42\t1516965641035\t아파트 매물상세\t124609\tNULL\t아파트\tNULL\t5385\t5385\tNULL\tNULL\tNULL\n2018-01-26\t1ff9c640-484b-497f-bd92-efaa9fbdecd3\tc98a0f22-a2e7-4b74-bb5e-c5b85cea81d3\tview_item\t2018-01-26 23:27:53\t1516976871270\t아파트 매물상세\t97475\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t508472b3-4161-413a-a052-f6a0431a229f\t6264275f-0459-4d49-86f9-63f92f3d10f2\tview_item\t2018-01-26 21:42:23\t1516970543596\t아파트 매물상세\t128913\tNULL\t아파트\tNULL\t23389\t23389\tNULL\tNULL\tNULL\n2018-01-26\t53d2d459-d51e-43a0-93d6-902d69716ef6\ta0c0d724-c153-4dbe-85d2-fbb04ba1d04d\tview_item\t2018-01-26 23:32:58\t1516977176600\t아파트 매물상세\t112115\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t9b033287-ac10-477f-b68f-c36b69d73f3e\tc964443d-af31-4dc2-ae16-144d948ed940\tview_item\t2018-01-26 06:24:39\t1516915477137\t아파트 매물상세\t111766\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t96b4f534-fb20-435a-b3bb-829e3b714262\t1beecf84-7825-486a-aa66-946f98e8ed61\tview_item\t2018-01-26 17:57:00\t1516957019632\t아파트 매물상세\t121152\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\ta3aa1d21-5327-438d-95a5-0e3840666789\t0703ea0d-205e-4d5c-857d-d65c47dbdbfd\tview_item\t2018-01-26 00:03:07\t1516892584940\t아파트 매물상세\t93463\tNULL\t아파트\tNULL\t11066\t11066\tNULL\tNULL\tNULL\n2018-01-26\t527c7781-65f1-4539-8f20-6e1882dc8c97\tf124b4ea-6b68-4753-87bc-9e1149f064b6\tview_item\t2018-01-26 05:17:18\t1516911436935\t아파트 매물상세\t118620\tNULL\t아파트\tNULL\t36520\t36520\tNULL\tNULL\tNULL\n2018-01-26\t65ffffe3-f36c-4db5-8c6c-02e055ad2dc0\t1469f9f6-b804-4e48-90fb-3de05c5df214\tview_item\t2018-01-26 19:53:22\t1516964000234\t아파트 매물상세\t130606\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t881d5dce-9045-41d7-8e7f-9deb27ae99d7\td2145f8e-5f56-4fcc-86eb-6ec3f735c2bd\tview_item\t2018-01-26 14:29:14\t1516944552024\t아파트 매물상세\t128830\tNULL\t아파트\tNULL\t22953\t22953\tNULL\tNULL\tNULL\n2018-01-26\t234c4011-9af5-48c2-a286-7c1443b0c4ac\tb40f390d-3321-412f-af05-fcd3a3af3671\tview_item\t2018-01-26 18:58:12\t1516960690880\t아파트 매물상세\t95291\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tb8c889a9-35db-457b-9f58-d333d26289ca\t1c468b59-b778-4536-95e6-003fed4b3a52\tview_item\t2018-01-26 02:08:40\t1516900122683\t아파트 매물상세\t64191\tNULL\t아파트\tNULL\t33260\t33260\tNULL\tNULL\tNULL\n2018-01-26\t5e226937-8d8c-4f53-814a-84c55333e5ca\t769113c0-3879-4fb2-95d4-d78f60a562f7\tview_item\t2018-01-26 00:09:23\t1516892962112\t아파트 매물상세\t121703\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t4346fd3b-55ce-4111-9e8e-578238f7a8d0\tdf807d5b-bd20-4ad6-b749-15ed8aae9d28\tview_item\t2018-01-26 02:42:36\t1516902153806\t아파트 매물상세\t133169\tNULL\t아파트\tNULL\t36147\t36147\tNULL\tNULL\tNULL\n2018-01-26\t55b3ea81-dd5a-415a-93a7-7509858992c0\t839f1b95-6113-4c81-96b1-cdb631b9bc00\tview_item\t2018-01-26 17:12:19\t1516954338664\t아파트 매물상세\t129232\tNULL\t아파트\tNULL\t15574\t15574\tNULL\tNULL\tNULL\n2018-01-26\t7fda4b3a-441c-4021-a181-0131821a535b\t01dbde48-9b8b-446f-ab22-7edf4c8f72f3\tview_item\t2018-01-26 00:47:15\t1516895233209\t아파트 매물상세\t99976\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tEF40B459-2F37-466D-89B7-5C78696497C4\t935F38B3-8605-4AAB-8205-D5D52B6A230D\tview_item\t2018-01-26 21:49:17\t1516970957\t아파트 매물상세\t85360\tNULL\t아파트\tNULL\t703\t23011\tNULL\tNULL\tNULL\n2018-01-26\t7d6d5703-4ac3-4131-861a-adb903c1f345\tb37860e1-0bc6-4254-a6c1-6444e42abc31\tview_item\t2018-01-26 20:19:55\t1516965598601\t아파트 매물상세\t123757\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t4d8f828a-080c-4751-af36-a1d74dda1689\t22fd27d6-65a0-472b-bc6c-f23f39ae701e\tview_item\t2018-01-26 01:23:31\t1516897410863\t아파트 매물상세\t96842\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t95752b3a-0139-4c3f-8b35-d17badc283b6\tb3bcbc13-0a86-4d6f-8355-24d53d693aa0\tview_item\t2018-01-26 12:03:22\t1516935798882\t아파트 매물상세\t114092\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\te8604752-1b98-4085-ad97-d92728e6c900\t0b1fcab3-f041-41bf-b725-93e9ebe089d1\tview_item\t2018-01-26 20:35:08\t1516966506352\t아파트 매물상세\t73986\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tc274dd36-3a88-4dd2-919c-66d9a4fa3c8b\ted6c8aab-6050-44cd-9027-4d141baeb4e8\tview_item\t2018-01-26 22:02:48\t1516971769119\t아파트 매물상세\t97737\tNULL\t아파트\tNULL\t36604\t36604\tNULL\tNULL\tNULL\n2018-01-26\td8587ee8-7654-4886-a759-6d4ad5681c59\t8ee5e502-aba3-428c-be5d-b53e2b6d3eab\tview_item\t2018-01-26 09:41:58\t1516927314128\t아파트 매물상세\t102262\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t154c0bcc-c04f-4dd8-a174-1168d20a2164\tcb56c7e2-8e3e-481e-8c71-e17d4a69dd35\tview_item\t2018-01-26 19:33:56\t1516962829968\t아파트 매물상세\t66118\tNULL\t아파트\tNULL\t15279\t15279\tNULL\tNULL\tNULL\n2018-01-26\t7f910925-2aae-4a5b-bb3d-ec5d0d29b419\tc462f59b-19d2-4ec6-8d41-5a5621e0eee5\tview_item\t2018-01-26 20:45:15\t1516967114631\t아파트 매물상세\t125525\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tf531e923-ba4c-4983-a789-9b99abff6775\td32f3454-b385-44c3-bae1-658f9bac88e8\tview_item\t2018-01-26 16:17:48\t1516951069466\t아파트 매물상세\t108205\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t14f18399-e481-4e32-addf-748a4a0745ea\taf0f3a92-64d3-4533-9d4e-80bb35653aad\tview_item\t2018-01-26 09:14:13\t1516925647094\t아파트 매물상세\t115738\tNULL\t아파트\tNULL\t10603\t10603\tNULL\tNULL\tNULL\n2018-01-26\t803e1d05-47f0-4709-a59f-a14ebece0400\tf620ecf3-d6b1-44c7-8145-1410803e037f\tview_item\t2018-01-26 12:30:54\t1516937453194\t아파트 매물상세\t81319\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\te82770cd-ec69-425d-a6da-0e237ae79b8e\t14f67670-a1f3-4dbe-985d-99136d59b02f\tview_item\t2018-01-26 19:19:33\t1516961968133\t아파트 매물상세\t120200\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tb633e696-d904-42ed-afcc-e6d16d301275\t9688b8d0-dfa9-4499-abe0-2e35f0be3efb\tview_item\t2018-01-26 20:09:56\t1516964994764\t아파트 매물상세\t121793\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t75166afa-fae4-4874-9300-a76f60e3f7ee\t8cbe189d-77ce-4479-84d5-31a7e3b69a1c\tview_item\t2018-01-26 01:41:48\t1516898506375\t아파트 매물상세\t101865\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tec114d19-9bfe-46c5-8708-1176f69fb764\t65a66918-017d-42d8-a2f7-8df071a271cf\tview_item\t2018-01-26 18:41:47\t1516959705286\t아파트 매물상세\t115326\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\td0c73cae-1f16-4eaa-8ba1-cdfa7008ac0d\tf2ad15b7-6124-4f63-8782-aa6bcb870f48\tview_item\t2018-01-26 11:00:23\t1516895983817\t아파트 매물상세\t89996\tNULL\t아파트\tNULL\t33216\t33216\tNULL\tNULL\tNULL\n2018-01-26\t7547de07-49cc-44d1-a57b-59fbc4e7abb8\t1faa7c16-1537-4464-9a82-63aeb9e72d94\tview_item\t2018-01-26 10:22:16\t1516929736232\t아파트 매물상세\t115646\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tf2db8d38-5a8a-4678-b892-cfdfdc469e10\ta06a7062-3c15-4962-a497-e9e5aadaaa62\tview_item\t2018-01-26 18:24:43\t1516958685875\t아파트 매물상세\t130815\tNULL\t아파트\tNULL\t23479\t23479\tNULL\tNULL\tNULL\n2018-01-26\ted9fcd35-e696-4149-bc38-4da420175d08\tbd36c277-f758-441c-bc6e-e01d51468bec\tview_item\t2018-01-26 01:22:23\t1516897343099\t아파트 매물상세\t71327\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t435a8325-3973-4bef-bc17-46a114b1ad14\td203108f-576f-4f9b-911c-c653d3a9ad9d\tview_item\t2018-01-26 10:02:17\t1516928536319\t아파트 매물상세\t129121\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\ta0aca029-f909-408b-b77c-c78d99417d57\t8982df51-f65b-4379-bacf-7fd916bed4de\tview_item\t2018-01-26 19:42:44\t1516963363919\t아파트 매물상세\t99585\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t3fdbb11b-6d32-4c8a-a0db-98adca2b3d72\tec57e07a-b56c-48cc-b34a-98efc9680de8\tview_item\t2018-01-26 21:32:16\t1516969935071\t아파트 매물상세\t123154\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tabb03327-3a22-474f-bdf0-dc59e40889b5\t762cbc9b-c415-4a89-bff9-4adf7b539fa2\tview_item\t2018-01-26 20:03:26\t1516964604184\t아파트 매물상세\t117969\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t2671d4dc-9d07-4d34-9a35-bc4d5f81b5f5\tff574f47-226d-4084-bf12-6b2d1028cfb1\tview_item\t2018-01-26 17:10:01\t1516954199527\t아파트 매물상세\t77305\tNULL\t아파트\tNULL\t11285\t11285\tNULL\tNULL\tNULL\n2018-01-26\t31eda987-be6a-4538-bf6c-2bd73097dcfc\t470b949b-4048-4b24-90a2-82ea1ba01c9a\tview_item\t2018-01-26 14:31:09\t1516944666985\t아파트 매물상세\t71825\tNULL\t아파트\tNULL\t19634\t19634\tNULL\tNULL\tNULL\n2018-01-26\te63013b3-86a4-4538-a1ad-5f204fa03d16\t7c398de5-6e84-48d7-8f04-9b3b6e61ac89\tview_item\t2018-01-26 20:12:03\t1516965122410\t아파트 매물상세\t100984\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t00e658f4-4f9a-488a-b0bb-82115cc2942b\t4f4fe633-82c7-4d47-b02f-c18303dd0658\tview_item\t2018-01-26 17:39:32\t1516955970268\t아파트 매물상세\t128207\tNULL\t아파트\tNULL\t2967\t2967\tNULL\tNULL\tNULL\n2018-01-26\tc442e276-7a75-45b8-9ebe-50c6cea8dd58\t008e541f-b61b-4f31-8600-a3a7038d772a\tview_item\t2018-01-26 14:29:31\t1516944569419\t아파트 매물상세\t129859\tNULL\t아파트\tNULL\t10174\t10174\tNULL\tNULL\tNULL\n2018-01-26\t9ad2db3b-91ea-46c5-b581-ff7a73fd84db\t824f7a74-6dcd-4b59-94e1-c3b2f202964c\tview_item\t2018-01-26 20:27:50\t1516966069400\t아파트 매물상세\t58609\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t6c33b6f1-05aa-4be2-a818-96d794ab6e53\t9da7d71c-d6c8-4d88-8e69-ecfc7933812a\tview_item\t2018-01-26 23:36:34\t1516977395869\t아파트 매물상세\t100200\tNULL\t아파트\tNULL\t7974\t7974\tNULL\tNULL\tNULL\n2018-01-26\t234c4011-9af5-48c2-a286-7c1443b0c4ac\tb40f390d-3321-412f-af05-fcd3a3af3671\tview_item\t2018-01-26 23:00:38\t1516975236592\t아파트 매물상세\t80868\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\td53bedf1-e1b4-4e14-bac6-9f47b9076421\tc2b24654-2a95-4bc9-96f7-cb403883775b\tview_item\t2018-01-26 00:39:41\t1516894782153\t아파트 매물상세\t93595\tNULL\t아파트\tNULL\t19894\t19894\tNULL\tNULL\tNULL\n2018-01-26\tcccc794f-96ff-4041-8952-b0a6c3921565\t40579194-f298-4428-8417-4e65527cd60f\tview_item\t2018-01-26 20:40:45\t1516966843637\t아파트 매물상세\t83595\tNULL\t아파트\tNULL\t20761\t20761\tNULL\tNULL\tNULL\n2018-01-26\tf8785c5e-4fdf-4be5-a3f6-3d53c5d036a1\tf5d05dfd-f6d7-4834-ad2b-2dcdfe7d73aa\tview_item\t2018-01-26 01:07:21\t1516896438681\t아파트 매물상세\t105772\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\td03203a2-cb4b-4295-a69f-101168b9dd1f\t3dc73e9d-8ac4-4795-9c36-7526cb40d5e7\tview_item\t2018-01-26 06:18:24\t1516915102177\t아파트 매물상세\t79630\tNULL\t아파트\tNULL\t17715\t17715\tNULL\tNULL\tNULL\n2018-01-26\td8587ee8-7654-4886-a759-6d4ad5681c59\t8ee5e502-aba3-428c-be5d-b53e2b6d3eab\tview_item\t2018-01-26 09:19:33\t1516925969008\t아파트 매물상세\t110216\tNULL\t아파트\tNULL\t5848\t5848\tNULL\tNULL\tNULL\n2018-01-26\te3ac02e5-3e72-4853-9cbb-2bf8fbf62ad0\ta69d3a1d-eeb1-4e64-9b63-4abd8d8f1a15\tview_item\t2018-01-26 13:41:12\t1516941671369\t아파트 매물상세\t98672\tNULL\t아파트\tNULL\t37047\t37047\tNULL\tNULL\tNULL\n2018-01-26\t18b546b0-3864-4e64-983f-3e37400dd929\t9b3ab616-5432-4e05-95fc-091083d111b2\tview_item\t2018-01-26 08:39:44\t1516923582165\t아파트 매물상세\t67462\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tbaaf4e02-e9ec-4965-aa0d-e21498c643e0\t23c5b42b-8216-4f9a-b05b-10bf71e519bc\tview_item\t2018-01-26 12:46:11\t1516938370036\t아파트 매물상세\t104333\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t3b03078c-0516-4480-af5d-361f5310dbc4\t29f9f973-6f58-44aa-9835-00bb6f0ed365\tview_item\t2018-01-26 18:27:29\t1516958848005\t아파트 매물상세\t79979\tNULL\t아파트\tNULL\t10924\t10924\tNULL\tNULL\tNULL\n2018-01-26\t64cbed1d-d44c-4256-a3ad-0e2333332a86\t570858fa-8a09-47b2-b18d-cd7f1b77505d\tview_item\t2018-01-26 22:43:26\t1516974201783\t아파트 매물상세\t121560\tNULL\t아파트\tNULL\t6045\t6045\tNULL\tNULL\tNULL\n2018-01-26\t4fd79cf4-e4b4-43f6-aaf3-3301fb9221be\tff057349-9478-4408-aa17-cf7b92b2a659\tview_item\t2018-01-26 21:31:56\t1516969915256\t아파트 매물상세\t100382\tNULL\t아파트\tNULL\t2822\t2822\tNULL\tNULL\tNULL\n2018-01-26\t1ba45983-eaa3-400e-8576-93c0283225e6\tcb6a60db-51fe-4ec4-bf34-162d41b78ab1\tview_item\t2018-01-26 08:19:18\t1516922355998\t아파트 매물상세\t65729\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t9e595e93-143a-4b2e-bf02-97d561d95e3f\tfcd6130d-c9c2-477e-93b2-b7e76291a588\tview_item\t2018-01-26 03:45:34\t1516905932542\t아파트 매물상세\t66481\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tcb6bb098-d548-413f-9f73-7a22ccc7ffc1\t1a2bdb41-88d5-45a7-bd6c-f3058e612ae9\tview_item\t2018-01-26 05:35:38\t1516912537422\t아파트 매물상세\t126081\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tba556abe-62cc-418d-b1c5-52062a4e66c8\t9f3a36ed-36dd-40ee-a47e-9d54709755ae\tview_item\t2018-01-26 23:09:41\t1516975784392\t아파트 매물상세\t124495\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t98430adf-b23c-4dce-9d38-dd5c4572f2db\tb7d19127-692a-4303-a3b7-48fb350186d2\tview_item\t2018-01-26 22:30:36\t1516973433800\t아파트 매물상세\t76796\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t8f39b737-eaf8-463b-a032-77ce82746cfb\t7adcdc58-fd85-4a01-8f8d-7c8cfab56aa4\tview_item\t2018-01-26 00:03:34\t1516892614147\t아파트 매물상세\t86123\tNULL\t아파트\tNULL\t16055\t16055\tNULL\tNULL\tNULL\n2018-01-26\tbdb0c44c-faf9-42a7-b9df-b1b79b2e570d\t4645698a-5d80-4931-903b-b3ee185b5815\tview_item\t2018-01-26 12:20:39\t1516936839726\t아파트 매물상세\t74699\tNULL\t아파트\tNULL\t4780\t4780\tNULL\tNULL\tNULL\n2018-01-26\ta13c2dd7-de00-4972-b35d-49f165075d04\td20ab932-cd92-42f3-8673-d869e23ae6cb\tview_item\t2018-01-26 09:27:22\t1516926440652\t아파트 매물상세\t115108\tNULL\t아파트\tNULL\t37064\t37064\tNULL\tNULL\tNULL\n2018-01-26\tc19cc4f6-80a0-4a8d-b6b8-adc8c49d2f57\tef90f840-9524-4a7d-97ea-21db952a81e9\tview_item\t2018-01-26 22:35:01\t1516973698550\t아파트 매물상세\t117661\tNULL\t아파트\tNULL\t18543\t18543\tNULL\tNULL\tNULL\n2018-01-26\t9e6dd6f2-a238-4db9-9b50-c4b03ee78181\t1317fc1f-6481-4b8c-820d-1eca4048fbb4\tview_item\t2018-01-26 15:20:26\t1516947626399\t아파트 매물상세\t110325\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t0d2f0bf5-6090-4db1-9c6e-079c05686934\tf6e525d4-780d-41da-b1a6-15ddd00bff74\tview_item\t2018-01-26 20:59:55\t1516967993158\t아파트 매물상세\t80616\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t8d7ea325-5e5c-4a60-81ec-5d5cc9b1bbc0\tfed1becf-3f41-4701-b141-0b14ec67160f\tview_item\t2018-01-26 20:28:23\t1516966101757\t아파트 매물상세\t105829\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\taa73972e-8ec0-47d6-ae69-ecd80efaaf71\tb3d1ddfd-6968-4bfe-925f-61fa8aa7c2e3\tview_item\t2018-01-26 21:23:30\t1516969409165\t아파트 매물상세\t69826\tNULL\t아파트\tNULL\t20049\t20049\tNULL\tNULL\tNULL\n2018-01-26\td03203a2-cb4b-4295-a69f-101168b9dd1f\t3dc73e9d-8ac4-4795-9c36-7526cb40d5e7\tview_item\t2018-01-26 05:33:41\t1516912419141\t아파트 매물상세\t79789\tNULL\t아파트\tNULL\t7133\t7133\tNULL\tNULL\tNULL\n2018-01-26\tdb505603-aec5-4deb-b1ef-a5ffbf56f73e\tfa728195-6644-4d0c-a605-4e32def8a847\tview_item\t2018-01-26 20:49:02\t1516967340494\t아파트 매물상세\t84724\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t22749bae-19ed-46ae-9ca5-fa0164ca0ab3\t90d53fd9-2957-489a-869a-37bd428105b2\tview_item\t2018-01-26 18:19:04\t1516958341555\t아파트 매물상세\t54730\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tb8ffe3db-962f-4607-8358-f9be23c9f703\tc499b6ae-29cb-4286-8411-6a28db1705a9\tview_item\t2018-01-26 00:42:14\t1516894928301\t아파트 매물상세\t72418\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tbfa1d17d-f503-4b02-9bc4-46948c972fa3\t8a917ca3-76c5-4ded-b282-863f1529b55b\tview_item\t2018-01-26 23:41:42\t1516977700800\t아파트 매물상세\t87369\tNULL\t아파트\tNULL\t12635\t12635\tNULL\tNULL\tNULL\n2018-01-26\t4c5e22ff-1cb6-4ed4-83c8-9510d955b228\te01d7402-bade-420e-a201-6ef6bf176742\tview_item\t2018-01-26 22:47:58\t1516974572182\t아파트 매물상세\t131193\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tacb81ada-ba03-4642-a3bb-d6de7d060d87\t97f95f3c-d9f4-4bd1-8856-ce48c407411e\tview_item\t2018-01-26 06:46:09\t1516916764437\t아파트 매물상세\t116109\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t4d67b2ba-7df3-45f6-9d13-a947afd19c32\tc9024e81-32ba-4bb8-bd1a-3cd56f86d07f\tview_item\t2018-01-26 08:29:07\t1516922944052\t아파트 매물상세\t58911\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t03f6f8f7-9f57-47be-b1b9-9a1a6b90b5d0\t73268ab6-12e4-469e-8e38-27a1904bd321\tview_item\t2018-01-26 15:08:46\t1516946925100\t아파트 매물상세\t63532\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\ta38cd29d-5b15-417b-a147-04dd2c745427\tf3006362-5858-4dd5-bc5f-9f1794bcfa40\tview_item\t2018-01-26 23:59:20\t1516978761837\t아파트 매물상세\t127983\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t371c87cc-bd7d-4745-b66b-0a2f16e364f9\t1ed15f71-bee8-4d1d-8585-bf4ac18178c2\tview_item\t2018-01-26 12:43:07\t1516938186345\t아파트 매물상세\t131259\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tFA49ED26-63AF-4D62-9D70-4DFF195E6424\tA389B304-D769-47FA-8AC5-EAE4964B0AA1\tview_item\t2018-01-26 16:59:59\t1516953599\t아파트 매물상세\t105384\tNULL\t아파트\tNULL\t19220\t53261\tNULL\tNULL\tNULL\n2018-01-26\tc3dcda1f-781e-4169-9318-7b062bf262ca\t8fc12738-ef46-45b6-8dbe-0f328ca9cfe0\tview_item\t2018-01-26 13:24:58\t1516940697365\t아파트 매물상세\t116770\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t0640ffaa-54c6-437a-9d3e-dcc9b6dca9ef\tff47d57c-5c8d-482d-8421-6ce32ce1db4e\tview_item\t2018-01-26 23:39:30\t1516977569441\t아파트 매물상세\t105256\tNULL\t아파트\tNULL\t1075\t1075\tNULL\tNULL\tNULL\n2018-01-26\te18b76bd-881d-4582-be03-6d3b70c21110\t6ff3c8bb-acfe-4177-baec-bd60ec9ae29d\tview_item\t2018-01-26 20:17:25\t1516965444053\t아파트 매물상세\t121135\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t84e099c2-3514-41c0-ad5c-d8297114a7fa\tbff7685c-69a1-4fe1-af45-b3c2d8b5052d\tview_item\t2018-01-26 23:19:02\t1516976340885\t아파트 매물상세\t113444\tNULL\t아파트\tNULL\t20931\t20931\tNULL\tNULL\tNULL\n2018-01-26\t9687ae09-6c51-4b65-99ef-2da419134f55\t54c133c2-5f21-4d90-83cb-843d293bc16f\tview_item\t2018-01-26 22:38:42\t1516973920880\t아파트 매물상세\t61418\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\ta8ba436f-a0ff-48fc-bb91-ffab2a501a86\tb072a991-4437-4e0a-bbc9-52f5a17ad9aa\tview_item\t2018-01-26 17:54:05\t1516956842492\t아파트 매물상세\t71847\tNULL\t아파트\tNULL\t33185\t33185\tNULL\tNULL\tNULL\n2018-01-26\tf7413939-a982-48cd-afa3-385ece9da39a\t9991b23c-40fe-40dc-9161-2bfe0f898a85\tview_item\t2018-01-26 17:17:52\t1516954672745\t아파트 매물상세\t130678\tNULL\t아파트\tNULL\t3069\t3069\tNULL\tNULL\tNULL\n2018-01-26\t2ca945f3-e934-4465-b501-94c61223714d\t7456a1d7-acd6-4bd3-9a60-2f4d8d00c102\tview_item\t2018-01-26 20:39:41\t1516966779839\t아파트 매물상세\t125420\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t21f2a22a-f109-4a66-9e78-c1377edadacb\t313d545b-7db2-4276-996e-0ba232226f24\tview_item\t2018-01-26 01:13:02\t1516896780863\t아파트 매물상세\t96210\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t07282455-8875-4ba6-95cf-0a2ec90be386\t9ca7099e-1ba1-4837-afe3-b2f87321dcff\tview_item\t2018-01-26 17:34:27\t1516955666239\t아파트 매물상세\t80634\tNULL\t아파트\tNULL\t19657\t19657\tNULL\tNULL\tNULL\n2018-01-26\t75166afa-fae4-4874-9300-a76f60e3f7ee\t8cbe189d-77ce-4479-84d5-31a7e3b69a1c\tview_item\t2018-01-26 01:48:58\t1516898936620\t아파트 매물상세\t101865\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t4d48bf77-1318-4f62-be76-17dd270af8bd\t9318fd6d-aa97-4495-9d4f-cc72b3039374\tview_item\t2018-01-26 01:48:20\t1516898898252\t아파트 매물상세\t129538\tNULL\t아파트\tNULL\t2279\t2279\tNULL\tNULL\tNULL\n2018-01-26\t40236e89-9a20-4af6-bb6c-00fe124a200d\t44daa402-9cf0-4e88-9317-e2792044f010\tview_item\t2018-01-26 18:24:47\t1516958686689\t아파트 매물상세\t71481\tNULL\t아파트\tNULL\t33518\t33518\tNULL\tNULL\tNULL\n2018-01-26\tfe8dc624-4315-4ef3-8efd-e47cd1e6c5a1\t0f77d930-08a7-4e68-8cfc-9be62d7fb2ab\tview_item\t2018-01-26 10:44:53\t1516931092574\t아파트 매물상세\t57745\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t5391763d-e528-4ff8-9362-b02ec28c6c10\t8d66b28f-62b7-4404-9c55-f741a73570f5\tview_item\t2018-01-26 06:30:10\t1516915822952\t아파트 매물상세\t73358\tNULL\t아파트\tNULL\t18349\t18349\tNULL\tNULL\tNULL\n2018-01-26\t696a2126-1841-4e82-9479-aa574c2d3ea2\t9e4214d7-825c-4366-8364-684e76e7875f\tview_item\t2018-01-26 09:24:13\t1516926254096\t아파트 매물상세\t123738\tNULL\t아파트\tNULL\t20337\t20337\tNULL\tNULL\tNULL\n2018-01-26\t761c30c6-aa15-4f6a-b293-4a7700dcf45b\t76fc4471-f397-4c13-9c1c-32c9ffe25154\tview_item\t2018-01-26 12:17:49\t1516936668248\t아파트 매물상세\t130258\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t6ce33d6c-3d6c-44de-8432-4d72e9a1e284\t6f5c80e6-f584-4a32-9abc-2e081a563d75\tview_item\t2018-01-26 22:16:01\t1516972560253\t아파트 매물상세\t90548\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t9a910b07-4af3-4b0d-8304-ad494f031a41\t0a6c70c6-fe8e-4af2-a4cf-dbb7974dd4dc\tview_item\t2018-01-26 07:47:49\t1516920468483\t아파트 매물상세\t58495\tNULL\t아파트\tNULL\t4440\t4440\tNULL\tNULL\tNULL\n2018-01-26\t8f8989c7-65e3-41af-bea6-7bac2cb5e0f6\tb5f93d46-10ec-438c-94e0-fc3859cb6e9a\tview_item\t2018-01-26 21:35:13\t1516970111912\t아파트 매물상세\t109097\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t14fe32b6-e862-43a5-8630-92bf9e98bbeb\t3895a565-daac-4654-99ce-9683a66834ac\tview_item\t2018-01-26 14:08:25\t1516943305778\t아파트 매물상세\t60495\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t1a2287b0-2ff2-40ff-822a-95c450e49033\te0109b85-2e2a-43d5-9f7c-626bdca2f7d6\tview_item\t2018-01-26 00:50:57\t1516895455965\t아파트 매물상세\t131719\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tC4DC3784-1E4B-4550-8802-ED9EBAB35B8D\t9331633C-66F6-4926-AC21-7272265A8E21\tview_item\t2018-01-26 16:24:14\t1516951454\t아파트 매물상세\t134479\tNULL\t아파트\tNULL\t20074\t95365\tNULL\tNULL\tNULL\n2018-01-26\tfc923d2f-daf3-4798-aa70-a5430ce0362e\ted9787a8-8397-4ade-bc57-48ceab756f65\tview_item\t2018-01-26 16:37:04\t1516952221534\t아파트 매물상세\t95158\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\ta339bfdc-5cab-4c0c-8cff-d931a84ab87b\t0215e441-8589-4648-aa29-8edb7e860b58\tview_item\t2018-01-26 21:28:41\t1516969719855\t아파트 매물상세\t131640\tNULL\t아파트\tNULL\t18084\t18084\tNULL\tNULL\tNULL\n2018-01-26\tcc92676c-1460-4cf3-954a-32746a1ca909\t6cb0bf93-b5d3-491a-90c8-35abf1229c72\tview_item\t2018-01-26 03:10:17\t1516903815194\t아파트 매물상세\t95772\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\te18b76bd-881d-4582-be03-6d3b70c21110\t6ff3c8bb-acfe-4177-baec-bd60ec9ae29d\tview_item\t2018-01-26 20:16:21\t1516965380378\t아파트 매물상세\t61441\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t87cfc742-5cb4-4d8c-9678-5571f373fabb\ta5b47c07-4bca-43ee-bc66-06f4010f194a\tview_item\t2018-01-26 16:59:52\t1516953590011\t아파트 매물상세\t119022\tNULL\t아파트\tNULL\t6427\t6427\tNULL\tNULL\tNULL\n2018-01-26\t26326DA9-FCB5-4A14-9030-A1184897F807\tFFEDAE31-C074-44C0-82D7-6F26D346B9ED\tview_item\t2018-01-26 22:26:11\t1516973171\t아파트 매물상세\t101469\tNULL\t아파트\tNULL\t5020\t32709\tNULL\tNULL\tNULL\n2018-01-26\t6fa0b116-785e-4188-88a3-3b3c037a5e70\tb3335dde-514c-40f8-a20f-de0894fcca6f\tview_item\t2018-01-26 12:58:44\t1516939122596\t아파트 매물상세\t126145\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t2ca79629-b276-418b-9d48-ed37a3f7903e\tcd119183-2101-4d30-a397-f35c8b20ce32\tview_item\t2018-01-26 17:59:52\t1516957190537\t아파트 매물상세\t123979\tNULL\t아파트\tNULL\t2894\t2894\tNULL\tNULL\tNULL\n2018-01-26\td748bdd3-9bba-49a1-9472-e77bc87ef10d\t281b070b-3842-4493-9e8a-dc3298b2b35d\tview_item\t2018-01-26 00:55:26\t1516895724701\t아파트 매물상세\t123159\tNULL\t아파트\tNULL\t20331\t20331\tNULL\tNULL\tNULL\n2018-01-26\tfd913f4a-efd0-45c4-87bb-8d8a5ef0209b\t72ddbf2c-064e-4fd5-a87b-bbe4c46c1b64\tview_item\t2018-01-26 02:51:28\t1516902684888\t아파트 매물상세\t133559\tNULL\t아파트\tNULL\t36718\t36718\tNULL\tNULL\tNULL\n2018-01-26\t61feab43-bb27-456e-9b6f-202035da54d1\td252a076-b11e-487f-b94f-000b6f6a031f\tview_item\t2018-01-26 20:33:15\t1516966394395\t아파트 매물상세\t77657\tNULL\t아파트\tNULL\t6574\t6574\tNULL\tNULL\tNULL\n2018-01-26\t433ee29d-3241-4642-be79-cd1e513b342e\t7a54b63a-218c-4ace-b284-6fcc61136e34\tview_item\t2018-01-26 20:55:32\t1516967731875\t아파트 매물상세\t134384\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t00f64a2e-24b2-4e62-b53d-041c544bd0cf\tf87dda48-7210-4f38-a0a1-9249ca195656\tview_item\t2018-01-26 20:28:21\t1516966100083\t아파트 매물상세\t90466\tNULL\t아파트\tNULL\t1018\t1018\tNULL\tNULL\tNULL\n2018-01-26\t12f0a81b-d276-430c-9460-4c48cb297a82\t6eb8ac65-d0c1-4c78-97c0-11e2f914a93b\tview_item\t2018-01-26 03:41:53\t1516905711838\t아파트 매물상세\t71418\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tafc94513-5ee2-4317-94dd-c3fdf2a6be4d\td125f18c-3b20-4851-96f7-0878ecec4aa1\tview_item\t2018-01-26 00:56:54\t1516895811737\t아파트 매물상세\t57408\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\ta2544b0c-1bd1-4bfc-8cf0-67b5c053a089\t0d04946c-a850-451d-a671-c81c49fb0dbc\tview_item\t2018-01-26 22:46:56\t1516974414674\t아파트 매물상세\t99316\tNULL\t아파트\tNULL\t19400\t19400\tNULL\tNULL\tNULL\n2018-01-26\t94422acd-c19d-4863-b960-20ae7474cb36\t06382fea-c777-42a4-8ee3-2983d788dfff\tview_item\t2018-01-26 23:12:51\t1516975969321\t아파트 매물상세\t116297\tNULL\t아파트\tNULL\t2369\t2369\tNULL\tNULL\tNULL\n2018-01-26\tfbde7956-99d5-4cb5-822a-8555d7a588e7\t463fccdd-3815-4e00-aab4-ac43ed598967\tview_item\t2018-01-26 18:32:42\t1516959163211\t아파트 매물상세\t99303\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t827fc26a-633b-486c-86b9-edbf369fdd8a\t4f0c8f11-50e0-438a-9642-2e86be9d7705\tview_item\t2018-01-26 19:46:09\t1516963568122\t아파트 매물상세\t117429\tNULL\t아파트\tNULL\t19574\t19574\tNULL\tNULL\tNULL\n2018-01-26\t6c6923c9-014c-4933-a616-b64b13fd7fa0\t53140991-886f-4dbb-a1f5-1afe3b7beff6\tview_item\t2018-01-26 22:20:17\t1516972816087\t아파트 매물상세\t65541\tNULL\t아파트\tNULL\t20581\t20581\tNULL\tNULL\tNULL\n2018-01-26\tc7262089-7d97-4c57-96a2-95ec68aae24c\t80aac9a9-ea69-4367-bfd9-d6e5f35f57f8\tview_item\t2018-01-26 19:16:33\t1516961790974\t아파트 매물상세\t77885\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tb8c9dc03-af80-40ec-9687-92771df779dc\tfcf28f81-52bb-43c6-bd84-032fe79daad2\tview_item\t2018-01-26 01:07:01\t1516896420939\t아파트 매물상세\t70632\tNULL\t아파트\tNULL\t14764\t14764\tNULL\tNULL\tNULL\n2018-01-26\t370e5aeb-4657-45f6-9ac2-601a3425c028\tbd9c3936-33a5-4d7b-ad78-8d03d316cf53\tview_item\t2018-01-26 07:02:29\t1516917746550\t아파트 매물상세\t88196\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t54fa5a4d-302a-465f-89d5-a3782070588c\te3a2b79d-d367-44ad-bbee-c3e960c922da\tview_item\t2018-01-26 19:18:31\t1516961910302\t아파트 매물상세\t131009\tNULL\t아파트\tNULL\t22585\t22585\tNULL\tNULL\tNULL\n2018-01-26\t78b84596-7be6-4465-8338-2b943e90ec47\t059b8041-d715-4e0a-9010-16501fbd8ede\tview_item\t2018-01-26 15:01:49\t1516946499348\t아파트 매물상세\t87439\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t94b94bbb-bb5b-4920-8daf-fd17587d96cb\td86b5c47-51a2-4550-a411-db83738924f4\tview_item\t2018-01-26 09:31:54\t1516926711761\t아파트 매물상세\t77244\tNULL\t아파트\tNULL\t3722\t3722\tNULL\tNULL\tNULL\n2018-01-26\t0dc21ded-09b5-4dac-878a-9740a588a3a7\t03710059-ed4c-4b3f-b6e6-6ab3732dafb5\tview_item\t2018-01-26 17:04:56\t1516953894419\t아파트 매물상세\t65942\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tcce774b8-2a55-41c2-a5d5-ed5af5ab8f54\t921d09fb-a09f-4979-a418-3d53cff2860c\tview_item\t2018-01-26 21:31:50\t1516969909327\t아파트 매물상세\t132399\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t97f578b4-6929-47c3-99af-b9b5db329d04\t3479af17-b894-4e2b-a82c-e115fcfd3f17\tview_item\t2018-01-26 23:29:24\t1516976963431\t아파트 매물상세\t106315\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tdc8081b3-3049-466a-84f0-1af337078322\teb6fac11-df92-4382-a0ad-bdae41152003\tview_item\t2018-01-26 16:02:25\t1516950142561\t아파트 매물상세\t91617\tNULL\t아파트\tNULL\t18103\t18103\tNULL\tNULL\tNULL\n2018-01-26\td193d0c2-1efc-44eb-b842-61339bd31fe9\tb4a0fa09-43a4-4ee9-a5d8-81c77a04e735\tview_item\t2018-01-26 22:34:43\t1516973680605\t아파트 매물상세\t130958\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t1dbe99c6-97aa-47c1-8519-00cb48545cf9\t2bd2ad11-d738-4c67-a1fe-a34e501dc49e\tview_item\t2018-01-26 01:07:18\t1516896436391\t아파트 매물상세\t62130\tNULL\t아파트\tNULL\t2572\t2572\tNULL\tNULL\tNULL\n2018-01-26\t34ea8aca-1fce-47f9-818c-4ba36b6bce16\t0f0d63a8-9ab2-461a-ac9a-179d57c29256\tview_item\t2018-01-26 15:35:19\t1516948518051\t아파트 매물상세\t73108\tNULL\t아파트\tNULL\t20110\t20110\tNULL\tNULL\tNULL\n2018-01-26\te8a6b4c5-337e-4563-91e0-7f7ed5702a91\teaa1dbad-14c7-4816-bea5-cac9e2730091\tview_item\t2018-01-26 15:50:38\t1516949436953\t아파트 매물상세\t58693\tNULL\t아파트\tNULL\t17589\t17589\tNULL\tNULL\tNULL\n2018-01-26\t1972404c-bfba-4408-ad2b-04a421453a82\tcb9a6c28-77c1-4960-b13a-75f03c4db0ff\tview_item\t2018-01-26 22:25:19\t1516973117330\t아파트 매물상세\t131594\tNULL\t아파트\tNULL\t37303\t37303\tNULL\tNULL\tNULL\n2018-01-26\tc428a8ed-7666-4c61-8043-f2c0f3aadd00\t74c71615-b45d-423f-a5a2-d27e6a7f49b3\tview_item\t2018-01-26 17:29:46\t1516955387532\t아파트 매물상세\t129682\tNULL\t아파트\tNULL\t321\t321\tNULL\tNULL\tNULL\n2018-01-26\t18ef082c-fb88-4a4b-8737-734a8c474288\ta4887327-8f81-4da5-b9f6-8c516b77acc8\tview_item\t2018-01-26 11:50:35\t1516935037653\t아파트 매물상세\t64355\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tdc2558ab-ee0f-4f6e-b9b2-9d1e6c973842\t8fc37b8a-b5cc-459a-b16f-0b1b6919fca6\tview_item\t2018-01-26 02:20:06\t1516900807916\t아파트 매물상세\t109138\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t3ac6df5f-00bf-43a2-9866-5898b0637ef4\t24b4450c-888a-4da4-9312-1a3f181b2bd1\tview_item\t2018-01-26 18:15:40\t1516958135420\t아파트 매물상세\t116414\tNULL\t아파트\tNULL\t3756\t3756\tNULL\tNULL\tNULL\n2018-01-26\t7c98fc6b-21e1-4031-9771-1ebd139e28de\t23fd8ac1-f719-40be-8fec-9062f8b7cbf5\tview_item\t2018-01-26 00:03:55\t1516892633461\t아파트 매물상세\t110261\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tb4d032e5-c5f6-49b8-85d7-a492453de80b\t9ed0ceef-ffcc-4446-915c-37bab54ece44\tview_item\t2018-01-26 20:05:33\t1516964731616\t아파트 매물상세\t131603\tNULL\t아파트\tNULL\t20103\t20103\tNULL\tNULL\tNULL\n2018-01-26\t3eb741c2-b1e9-40b3-a069-2c9bdbaf2847\tb5e9d658-6f1e-4447-ac5c-49f73e44bdd6\tview_item\t2018-01-26 05:44:57\t1516913094961\t아파트 매물상세\t73358\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t18774e0f-231d-41be-98e5-0c3b08ed2a8c\t0fae6fde-db8b-49c4-b5d0-9f8b9bac9609\tview_item\t2018-01-26 17:16:54\t1516954613259\t아파트 매물상세\t99975\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t81e68954-c44e-4ba8-8ac1-a7d36aeeb4b7\ta60ab9f8-d18b-48e5-8a2f-257985ea0c53\tview_item\t2018-01-26 21:29:01\t1516969737043\t아파트 매물상세\t112554\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tD4E46455-4C95-48D7-9996-08A2223F8B5F\tEE1AEADF-79B5-4799-A288-10338B8DA9CE\tview_item\t2018-01-26 18:05:25\t1516957525\t아파트 매물상세\t91781\tNULL\t아파트\tNULL\t4326\t7702\tNULL\tNULL\tNULL\n2018-01-26\ta09211c0-4fe1-4f08-900b-489ccee54fd1\t962cf4ce-9ab9-4970-acaa-de63b18e2703\tview_item\t2018-01-26 17:22:03\t1516954910356\t아파트 매물상세\t129439\tNULL\t아파트\tNULL\t33341\t33341\tNULL\tNULL\tNULL\n2018-01-26\t5a6c133a-2630-4862-b03c-4c1aafcba6ca\t32c39ca3-ba05-4fc8-9d29-5df45b87d390\tview_item\t2018-01-26 21:57:20\t1516971438319\t아파트 매물상세\t125319\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t99b8917a-6e37-4102-bb30-462bd3a2f0f4\t89ea9f02-b09f-4d64-a703-2d3b275818a8\tview_item\t2018-01-26 10:31:46\t1516930304588\t아파트 매물상세\t118236\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t42924b20-28b2-4319-8731-f4947da68b11\td43c1527-a17f-40ed-b06a-caa6d15df581\tview_item\t2018-01-26 01:49:18\t1516898956638\t아파트 매물상세\t133125\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t574b64ae-0f40-400a-97ec-c7b40b0721e5\t3ccdf5f0-e039-4b36-bfe7-56aaa40791b1\tview_item\t2018-01-26 00:10:09\t1516893008258\t아파트 매물상세\t130423\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t3c9d52ff-a4cf-4cfb-92f9-c22ec041fd9e\t480d1d60-3e88-4ec8-8a52-753761434ee6\tview_item\t2018-01-26 17:26:37\t1516955195804\t아파트 매물상세\t80734\tNULL\t아파트\tNULL\t693\t693\tNULL\tNULL\tNULL\n2018-01-26\ta8abe27d-e82c-4e53-af6a-edfb6d6ce301\tc2301e41-4715-4cbb-a609-fbc8eab8c04c\tview_item\t2018-01-26 19:26:16\t1516962375004\t아파트 매물상세\t109436\tNULL\t아파트\tNULL\t15842\t15842\tNULL\tNULL\tNULL\n2018-01-26\t866FDE9A-60AE-41BB-9477-54E4572AD85E\t80566C72-3C30-48A0-BB0A-65B2BC8D7D84\tview_item\t2018-01-26 18:57:15\t1516960636\t아파트 매물상세\t94043\tNULL\t아파트\tNULL\t5331\t147480\tNULL\tNULL\tNULL\n2018-01-26\tce3e016a-ac95-49cc-acfd-40f9a78be569\td12742dc-3407-4337-8acb-01e96e920fbf\tview_item\t2018-01-26 18:20:38\t1516958436602\t아파트 매물상세\t131799\tNULL\t아파트\tNULL\t190\t190\tNULL\tNULL\tNULL\n2018-01-26\t7d055179-1cab-447f-a5a8-2dadabe4cd56\tf8043bff-bd2d-4ea7-86d0-3d8045a2ac1f\tview_item\t2018-01-26 07:09:23\t1516918172571\t아파트 매물상세\t84199\tNULL\t아파트\tNULL\t4385\t4385\tNULL\tNULL\tNULL\n2018-01-26\t6c4528a4-d762-4aea-bcd5-104e30ac933f\t5926138a-9c64-4e35-aa53-7c587c9e6aeb\tview_item\t2018-01-26 23:57:55\t1516978674014\t아파트 매물상세\t131280\tNULL\t아파트\tNULL\t2385\t2385\tNULL\tNULL\tNULL\n2018-01-26\t101c649d-3f53-4dd1-968b-982aaab43df7\t4ee1e1df-a786-4f23-8855-17f7f83bcc5b\tview_item\t2018-01-26 17:20:03\t1516954801190\t아파트 매물상세\t92296\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\te51c9d3c-a48b-41b4-97a3-9b8cc7c86897\t52eb7081-3d8f-4186-b145-9d84e50168f4\tview_item\t2018-01-26 17:28:16\t1516955294183\t아파트 매물상세\t103400\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t24f069a4-4079-498b-aff0-84cafc0137c2\tf6e1b606-97cb-4f5f-99d4-e5d13ad18bbf\tview_item\t2018-01-26 17:24:38\t1516955075983\t아파트 매물상세\t71715\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t22e4f886-de95-48e9-983f-cfb791d7a790\t0d42e691-efdb-4695-9d37-e738e9a330cd\tview_item\t2018-01-26 20:44:57\t1516967094993\t아파트 매물상세\t101812\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t4c3a022b-573e-4de8-a76e-bc52199f0343\tcdce327f-1c95-45f7-9968-317e2d65fabb\tview_item\t2018-01-26 00:19:16\t1516893553939\t아파트 매물상세\t94442\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t7340e303-bee7-41ec-a251-b4831ae4087e\t6568b1dd-15bd-4ef4-a92d-e9fe09dc8a46\tview_item\t2018-01-26 01:55:39\t1516899338816\t아파트 매물상세\t111102\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\taf96f933-09e4-4f29-a972-9e062ba764cb\t47f40ab1-3183-486e-b57e-9e710b9e9a69\tview_item\t2018-01-26 18:23:05\t1516958583421\t아파트 매물상세\t79520\tNULL\t아파트\tNULL\t1066\t1066\tNULL\tNULL\tNULL\n2018-01-26\t472eb353-a0e0-4546-92fa-d1c3fa131dc1\tcc68d52b-5cfb-49f6-9c09-1a9a47ec541c\tview_item\t2018-01-26 14:20:42\t1516944040798\t아파트 매물상세\t133462\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t40cbe507-a63c-4667-aecd-cc94837da84a\t64423e10-3946-4e0f-aaca-776d3d0581ab\tview_item\t2018-01-26 14:01:58\t1516942916737\t아파트 매물상세\t102987\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\ta20e24f7-394e-4ce5-8cc8-12f60e1c64bb\te147ede1-a371-412e-95c1-efe58ac3c9a1\tview_item\t2018-01-26 18:47:44\t1516960061126\t아파트 매물상세\t111571\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t6c6ad54a-7034-4c36-b36f-6bd4aa510f64\t3d014e14-f251-4a08-9a15-0ec104d90ace\tview_item\t2018-01-26 04:14:39\t1516907675139\t아파트 매물상세\t112228\tNULL\t아파트\tNULL\t37146\t37146\tNULL\tNULL\tNULL\n2018-01-26\tf32cc44e-bc45-44b8-8dcd-286e2eb1b6d1\t2da14831-1510-4d51-8ebd-c3f792d9465f\tview_item\t2018-01-26 23:40:46\t1516977644441\t아파트 매물상세\t73139\tNULL\t아파트\tNULL\t18022\t18022\tNULL\tNULL\tNULL\n2018-01-26\t4cbbe62c-9387-439d-ac17-74aabe9d0011\t11284412-90b2-497b-be5a-bad2dd8d60be\tview_item\t2018-01-26 20:56:29\t1516967789212\t아파트 매물상세\t130365\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t9311c059-93be-4945-8f79-88daabff5877\t1c8fa0da-2d18-4ed7-adc5-346d2f2e4cae\tview_item\t2018-01-26 18:23:00\t1516958578549\t아파트 매물상세\t77752\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\td0d2c7d7-617f-4f38-86df-f5a771a5e7a6\tba826d6b-7190-4485-95d5-4cda205b9928\tview_item\t2018-01-26 02:49:19\t1516902556574\t아파트 매물상세\t90699\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tf7712b0a-650d-4a6b-94b9-b3a0177b346f\t2f3bdd6f-e49a-4106-8193-cc11d8cf8d8b\tview_item\t2018-01-26 22:09:18\t1516972159315\t아파트 매물상세\t131406\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\ta6914d74-2e56-4953-9281-f6e04d489a66\t4b30d901-3bc1-4e64-89a7-ca8cd2fef0ce\tview_item\t2018-01-26 17:23:54\t1516955032850\t아파트 매물상세\t101662\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t9d2a1e81-36ba-4c98-a0cf-c3fd88332428\t3e423761-406a-4c69-85c3-2459237f9385\tview_item\t2018-01-26 09:29:15\t1516926552439\t아파트 매물상세\t99374\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tfd72b1a9-9edb-4d87-bc49-ddb99da27152\tf74f1e9c-8e6c-47c6-beef-a5deb37d9ec0\tview_item\t2018-01-26 21:21:29\t1516969288186\t아파트 매물상세\t122101\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tddfe93b5-690a-488a-971e-8c21bee6f08b\tc31ac2ea-083d-42ae-b36a-d515a60ca14f\tview_item\t2018-01-26 17:09:49\t1516954188916\t아파트 매물상세\t129663\tNULL\t아파트\tNULL\t5278\t5278\tNULL\tNULL\tNULL\n2018-01-26\t7e5c1f80-ae73-4140-83ba-d780fe22fd77\tc9aa4553-5be0-4d6a-a4a7-386dc26f7eb4\tview_item\t2018-01-26 09:47:23\t1516927640206\t아파트 매물상세\t132228\tNULL\t아파트\tNULL\t3879\t3879\tNULL\tNULL\tNULL\n2018-01-26\tc354cd99-06d3-4a42-8541-c50137272b4c\t61f255b5-865f-4847-8e46-9d7e164501ff\tview_item\t2018-01-26 16:49:00\t1516952938404\t아파트 매물상세\t103559\tNULL\t아파트\tNULL\t3323\t3323\tNULL\tNULL\tNULL\n2018-01-26\tcf04c068-4b62-49b7-88b3-71f3fb5b7ae7\te48b40ef-b45d-4343-9677-9a56222e49ec\tview_item\t2018-01-26 23:29:24\t1516976962263\t아파트 매물상세\t128909\tNULL\t아파트\tNULL\t19115\t19115\tNULL\tNULL\tNULL\n2018-01-26\tfc2cbef4-9bab-4a0b-bd49-ddddad968b06\t0099a148-f488-4945-b621-6ec468503585\tview_item\t2018-01-26 17:18:11\t1516954690273\t아파트 매물상세\t107339\tNULL\t아파트\tNULL\t18376\t18376\tNULL\tNULL\tNULL\n2018-01-26\ta8b01dc8-ceea-4595-8cd2-744559f7b5aa\ta2654f38-1f2b-4ab3-81cb-cba6b2721307\tview_item\t2018-01-26 08:21:13\t1516922473725\t아파트 매물상세\t100544\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tde1bf738-0bcc-4b62-ba2e-cd85e917a603\te5299da5-9b6d-4508-bf6a-84bfc72b354f\tview_item\t2018-01-26 09:55:21\t1516928119863\t아파트 매물상세\t73823\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\td727caf0-1409-4403-b94c-39f0ab8d257e\t2b058675-de74-49c5-95d7-d1f246121522\tview_item\t2018-01-26 21:42:25\t1516970544026\t아파트 매물상세\t124483\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tD222A748-E9C2-49AB-B89B-34B4C4A86430\t23705374-B868-4DEC-B8A9-085023838FDA\tview_item\t2018-01-26 22:28:36\t1516973316\t아파트 매물상세\t109091\tNULL\t아파트\tNULL\t14573\t46601\tNULL\tNULL\tNULL\n2018-01-26\tf9b2b34c-136b-46b6-8a19-0afa92d5b767\ta6d7fddc-979c-4ba2-9479-9ae4ad215c3b\tview_item\t2018-01-26 12:14:29\t1516936467628\t아파트 매물상세\t96670\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t912f643a-e26a-471e-ba25-6707ee8c9a44\ted9b6524-a29c-4e67-be2b-034773c7c496\tview_item\t2018-01-26 10:55:30\t1516931728306\t아파트 매물상세\t110637\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t3b1d177c-63e0-434d-988b-f593a211f855\t8ef79a15-0597-4173-901c-9138e93756a9\tview_item\t2018-01-26 00:53:44\t1516895622547\t아파트 매물상세\t66263\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t1a31f585-766b-4531-9846-ec250887c1a6\t95f147ac-85c3-47e4-8afe-dae492ef3c21\tview_item\t2018-01-26 14:33:27\t1516944805220\t아파트 매물상세\t67397\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t10c7a249-f071-4061-8678-82d62ed69d20\tb7357e69-1bfa-41e4-9fe2-a608f7c0da7a\tview_item\t2018-01-26 15:24:12\t1516947850869\t아파트 매물상세\t124454\tNULL\t아파트\tNULL\t37012\t37012\tNULL\tNULL\tNULL\n2018-01-26\t357d6e53-66c3-4e72-a318-c14839d87195\t62b96410-f116-47a5-b48a-87485d675318\tview_item\t2018-01-26 18:14:14\t1516958052284\t아파트 매물상세\t67778\tNULL\t아파트\tNULL\t33305\t33305\tNULL\tNULL\tNULL\n2018-01-26\t77ec666b-0611-4253-98d6-5c52d3dc970c\t3c0477fe-6f0c-4763-ab69-ed5818119a21\tview_item\t2018-01-26 01:19:30\t1516897168212\t아파트 매물상세\t118980\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t8e3ff2cb-b835-41de-9fb8-bbdb4ceda676\t68ae0c4e-8fce-4ec2-a2d1-723f9de45e9a\tview_item\t2018-01-26 08:59:17\t1516924752705\t아파트 매물상세\t123044\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tb8f43819-1e75-4546-ab7a-4dfebf889714\t1f656593-7311-4b0f-80a3-8c27e2a74e95\tview_item\t2018-01-26 22:42:35\t1516974153385\t아파트 매물상세\t118976\tNULL\t아파트\tNULL\t34131\t34131\tNULL\tNULL\tNULL\n2018-01-26\t6bf9f8fd-a111-42fa-9e7c-f617ba45a5c1\ta591abed-d15a-423e-b333-87a4eeb662f1\tview_item\t2018-01-26 17:39:01\t1516955941777\t아파트 매물상세\t57952\tNULL\t아파트\tNULL\t3678\t3678\tNULL\tNULL\tNULL\n2018-01-26\tD4E46455-4C95-48D7-9996-08A2223F8B5F\tEE1AEADF-79B5-4799-A288-10338B8DA9CE\tview_item\t2018-01-26 18:04:26\t1516957466\t아파트 매물상세\t117907\tNULL\t아파트\tNULL\t4326\t7702\tNULL\tNULL\tNULL\n2018-01-26\tddfe93b5-690a-488a-971e-8c21bee6f08b\tc31ac2ea-083d-42ae-b36a-d515a60ca14f\tview_item\t2018-01-26 17:12:02\t1516954322382\t아파트 매물상세\t129663\tNULL\t아파트\tNULL\t5278\t5278\tNULL\tNULL\tNULL\n2018-01-26\tbd330baa-86b2-4a48-8ad2-c367c703731e\t0961e719-a57f-44c4-9d43-35d72fc2dca6\tview_item\t2018-01-26 20:15:28\t1516965329220\t아파트 매물상세\t122190\tNULL\t아파트\tNULL\t37032\t37032\tNULL\tNULL\tNULL\n2018-01-26\ted9fcd35-e696-4149-bc38-4da420175d08\tbd36c277-f758-441c-bc6e-e01d51468bec\tview_item\t2018-01-26 01:26:16\t1516897575975\t아파트 매물상세\t133214\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tfa6c9f23-ee89-4b6d-8009-9b68c61edfea\tdf8fc533-33b6-406d-8878-afc6970f7d29\tview_item\t2018-01-26 17:42:06\t1516956125841\t아파트 매물상세\t105536\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t1a0339ad-5995-4c78-bc16-87cbdcd44697\t98b21528-b4ef-42fe-8eba-43b6439bc6f5\tview_item\t2018-01-26 22:40:52\t1516974049898\t아파트 매물상세\t105867\tNULL\t아파트\tNULL\t6854\t6854\tNULL\tNULL\tNULL\n2018-01-26\t6b5b824e-e9a4-4987-b537-15b547c4fcb0\t4c26c572-ee56-482f-abef-64b2a801d945\tview_item\t2018-01-26 16:00:59\t1516950056935\t아파트 매물상세\t57232\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t4df589e6-4337-415f-8379-d7e081f64acf\t55ae38b6-6189-453b-a738-2e2bf6a0e7c2\tview_item\t2018-01-26 19:21:35\t1516962093739\t아파트 매물상세\t100077\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t911f665b-8e3b-4d08-a9d3-d3dd9b9b4b9b\t561bde2e-e44c-439f-912d-b694851a26fa\tview_item\t2018-01-26 20:31:14\t1516966273312\t아파트 매물상세\t89975\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tB9BE682D-E7AF-4998-B7CF-008C546E714A\t1DBE3834-6397-4560-804D-A19FC9D559AC\tecommerce_purchase\t2018-01-26 11:19:37\t1516933177\t아파트 매물상세\t79804\t전화\t아파트\t1\t4274\t7638\t896959\tNULL\tNULL\n2018-01-26\tb92a0a02-7b65-49c7-9b4a-7d1d34cb47e1\tbce33e31-f832-4c10-8ec7-ac2e4b3432f6\tview_item\t2018-01-26 01:27:24\t1516897642674\t아파트 매물상세\t88116\tNULL\t아파트\tNULL\t5976\t5976\tNULL\tNULL\tNULL\n2018-01-26\t49a948e2-b49b-4caa-87d7-21b58f38b809\t85608391-781e-4ba2-b522-2b8420fedaa8\tview_item\t2018-01-26 12:36:55\t1516937813977\t아파트 매물상세\t120095\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t4ab683ff-b0d3-41a0-88d5-6396dbf1199b\te65f2cd5-9d9f-4ed9-aad9-a0d1a0f1b8a6\tview_item\t2018-01-26 19:28:15\t1516962496412\t아파트 매물상세\t77931\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tb216b500-019d-4718-ba10-78227a8f8e30\tae7bb6ce-698b-44ea-8fb3-653d94dd5e2a\tview_item\t2018-01-26 04:22:54\t1516908172781\t아파트 매물상세\t81768\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t4d48bf77-1318-4f62-be76-17dd270af8bd\t9318fd6d-aa97-4495-9d4f-cc72b3039374\tview_item\t2018-01-26 01:46:54\t1516898812277\t아파트 매물상세\t105610\tNULL\t아파트\tNULL\t2279\t2279\tNULL\tNULL\tNULL\n2018-01-26\t7787c468-e831-48c0-a1ec-5eda903bdcbe\te661358e-009f-44f8-b920-ee3cb7a7a3b8\tview_item\t2018-01-26 17:16:33\t1516954593093\t아파트 매물상세\t130423\tNULL\t아파트\tNULL\t20935\t20935\tNULL\tNULL\tNULL\n2018-01-26\t4c5e22ff-1cb6-4ed4-83c8-9510d955b228\te01d7402-bade-420e-a201-6ef6bf176742\tview_item\t2018-01-26 22:47:08\t1516974521439\t아파트 매물상세\t131193\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\teb2b8afd-ac84-44b9-a464-6dcad979e1a0\t1efe7a3d-52dc-4fef-9d4d-3ed766a13bed\tview_item\t2018-01-26 23:53:29\t1516978412570\t아파트 매물상세\t101204\tNULL\t아파트\tNULL\t3832\t3832\tNULL\tNULL\tNULL\n2018-01-26\t3fdbb11b-6d32-4c8a-a0db-98adca2b3d72\tec57e07a-b56c-48cc-b34a-98efc9680de8\tview_item\t2018-01-26 22:07:16\t1516972034917\t아파트 매물상세\t134833\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tf1e2fd6a-6401-4488-bc7a-4abb7d2d0397\t80ba31dc-160b-471a-bbbf-42dd437014c3\tview_item\t2018-01-26 16:00:54\t1516950052000\t아파트 매물상세\t76555\tNULL\t아파트\tNULL\t3832\t3832\tNULL\tNULL\tNULL\n2018-01-26\tb55138bb-496a-495a-92d8-283505e9163e\t7a82cb25-0689-4008-b30c-cee7d4029b8a\tview_item\t2018-01-26 13:41:52\t1516941710426\t아파트 매물상세\t133925\tNULL\t아파트\tNULL\t2514\t2514\tNULL\tNULL\tNULL\n2018-01-26\t154730f9-09bd-44b6-8342-60a6119679e5\te86611b7-7d25-46e8-8bc2-bccf23007ed6\tview_item\t2018-01-26 18:22:53\t1516958570126\t아파트 매물상세\t130357\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tac8838a5-0889-43cb-be7f-a3d305c6a46c\t8299588f-f180-467f-b321-0e4b41f4a622\tview_item\t2018-01-26 07:18:08\t1516918704663\t아파트 매물상세\t132832\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t6ce33d6c-3d6c-44de-8432-4d72e9a1e284\t6f5c80e6-f584-4a32-9abc-2e081a563d75\tview_item\t2018-01-26 22:24:08\t1516973046880\t아파트 매물상세\t69191\tNULL\t아파트\tNULL\t36467\t36467\tNULL\tNULL\tNULL\n2018-01-26\t15b75c2e-f432-4059-a970-c3aee4696fe3\tc7ddf5a3-785f-4b71-ada9-3c7e335a3a13\tview_item\t2018-01-26 17:15:24\t1516954522664\t아파트 매물상세\t61908\tNULL\t아파트\tNULL\t17790\t17790\tNULL\tNULL\tNULL\n2018-01-26\t26c26311-8fe5-44b2-ac60-8aad0caf712f\t453bb527-73b7-46ef-8f38-a0d0abe3a037\tview_item\t2018-01-26 10:50:09\t1516931408058\t아파트 매물상세\t122098\tNULL\t아파트\tNULL\t17791\t17791\tNULL\tNULL\tNULL\n2018-01-26\t53e2839e-2f57-4c44-b08c-acc2b1fcce23\tbfc4f26f-c770-40c2-b435-23f6e42625d3\tview_item\t2018-01-26 03:07:37\t1516903656439\t아파트 매물상세\t103222\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\te3e92850-b032-4702-8045-469cbd5c2c01\t0b500c62-5298-4201-b708-f3d8a00a9e31\tview_item\t2018-01-26 22:56:06\t1516974965345\t아파트 매물상세\t110978\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t6b1f570c-2232-48c1-b438-e285bd12c576\t3f7ef3ce-2ba1-4ba6-b52d-3e6b859c67e6\tview_item\t2018-01-26 22:23:23\t1516973006664\t아파트 매물상세\t64983\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\te60065b7-198b-4966-9a03-6000ff8a64cc\t4c5b609b-1a1f-4a7a-bd33-7ee70cb4ae8d\tview_item\t2018-01-26 21:56:47\t1516971405289\t아파트 매물상세\t118987\tNULL\t아파트\tNULL\t4956\t4956\tNULL\tNULL\tNULL\n2018-01-26\t579b2d4a-89d6-4e24-8473-bff3beaee780\tdabde98b-5406-4f14-bd15-bea725bc47f9\tview_item\t2018-01-26 16:35:49\t1516952145423\t아파트 매물상세\t88100\tNULL\t아파트\tNULL\t5802\t5802\tNULL\tNULL\tNULL\n2018-01-26\tacb81ada-ba03-4642-a3bb-d6de7d060d87\t97f95f3c-d9f4-4bd1-8856-ce48c407411e\tview_item\t2018-01-26 06:47:29\t1516916843610\t아파트 매물상세\t57693\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t234c4011-9af5-48c2-a286-7c1443b0c4ac\tb40f390d-3321-412f-af05-fcd3a3af3671\tview_item\t2018-01-26 23:06:54\t1516975612149\t아파트 매물상세\t133813\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tce1323a9-b82e-40d1-ab59-8ee2e5408dde\t4483e116-a79e-4f06-be97-06b1cefc944f\tview_item\t2018-01-26 16:55:17\t1516953316988\t아파트 매물상세\t84447\tNULL\t아파트\tNULL\t3628\t3628\tNULL\tNULL\tNULL\n2018-01-26\t1a8a92ed-22cc-4250-9a68-0c3d7e6305ff\t1d312b1b-ff3b-48b8-8d26-ac65e9281886\tview_item\t2018-01-26 00:03:08\t1516892587183\t아파트 매물상세\t130369\tNULL\t아파트\tNULL\t3832\t3832\tNULL\tNULL\tNULL\n2018-01-26\t078cd068-46e1-423d-bc37-5b70fcd885bb\t33576464-10e9-4c44-8aa6-bff09b46d396\tview_item\t2018-01-26 10:16:52\t1516929410545\t아파트 매물상세\t114647\tNULL\t아파트\tNULL\t3939\t3939\tNULL\tNULL\tNULL\n2018-01-26\t4176b972-ab8f-40e3-aa44-dc20215c6756\tdd27ec79-cd70-42f1-aac7-c5bf653d7a00\tview_item\t2018-01-26 23:19:07\t1516976346954\t아파트 매물상세\t113714\tNULL\t아파트\tNULL\t4028\t4028\tNULL\tNULL\tNULL\n2018-01-26\t8a6bfdc4-cbb5-4048-8628-9eeda9d802ed\teccbea5a-8066-40e6-b8b0-122568f1e45f\tview_item\t2018-01-26 17:21:57\t1516954915386\t아파트 매물상세\t121495\tNULL\t아파트\tNULL\t22463\t22463\tNULL\tNULL\tNULL\n2018-01-26\t196e21bf-f500-4a1c-acac-1f225334ead9\tb2b3acaa-4463-4cc0-81f1-54bf71b91174\tview_item\t2018-01-26 17:45:38\t1516956336212\t아파트 매물상세\t106953\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\te9363ca3-3427-42bf-bd48-04dba57417eb\taf41616c-82ae-49cb-89d4-e5482d5ce7e9\tview_item\t2018-01-26 20:27:25\t1516966044708\t아파트 매물상세\t75478\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\te06e6436-22ce-4d77-aa53-6c5af3191f41\t74524c78-9542-4be6-8c2c-2f62ab23088b\tview_item\t2018-01-26 14:39:29\t1516945168832\t아파트 매물상세\t129025\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t3fdbb11b-6d32-4c8a-a0db-98adca2b3d72\tec57e07a-b56c-48cc-b34a-98efc9680de8\tview_item\t2018-01-26 22:14:51\t1516972490012\t아파트 매물상세\t106803\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t7f910925-2aae-4a5b-bb3d-ec5d0d29b419\tc462f59b-19d2-4ec6-8d41-5a5621e0eee5\tview_item\t2018-01-26 17:09:13\t1516954153186\t아파트 매물상세\t120157\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\ta9b1b8d6-8340-4e3e-9f99-80e92510f193\t18ad5eac-806b-473f-b2dc-339b67d06bed\tview_item\t2018-01-26 09:17:17\t1516925834853\t아파트 매물상세\t100046\tNULL\t아파트\tNULL\t626\t626\tNULL\tNULL\tNULL\n2018-01-26\ta2d8dad2-1138-483f-a909-ef4ce300fafe\tc1ea9f01-6fa9-43d9-85c5-79237efe0702\tview_item\t2018-01-26 02:48:21\t1516902499910\t아파트 매물상세\t73314\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\t5c1e2785-5527-4b51-8f03-432b7622398a\t03992cbc-b6c3-4774-838f-0491afc1b3c4\tview_item\t2018-01-26 11:22:37\t1516933355791\t아파트 매물상세\t107450\tNULL\t아파트\tNULL\t18085\t18085\tNULL\tNULL\tNULL\n2018-01-26\td7f75624-90bf-4609-9007-300b50510f33\tb64c5692-9362-4aa3-beb8-358cb40455d1\tview_item\t2018-01-26 08:07:48\t1516921666280\t아파트 매물상세\t117194\tNULL\t아파트\tNULL\t33075\t33075\tNULL\tNULL\tNULL\n2018-01-26\t637b5f3d-31e2-4571-8dc1-fecc539d67d5\te56b872a-0ed3-42a9-bba3-5d1c90fa7422\tview_item\t2018-01-26 22:18:26\t1516972705045\t아파트 매물상세\t64622\tNULL\t아파트\tNULL\t5357\t5357\tNULL\tNULL\tNULL\n2018-01-26\t30777c17-e995-4ae6-b18f-16701dd09d66\tad3949bb-5ead-4c69-9da7-f3885699927c\tview_item\t2018-01-26 01:31:21\t1516897878613\t아파트 매물상세\t102646\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL\n2018-01-26\tcd311aac-7ac5-437b-b916-85b4c78d640d\t99bc0737-6c30-4fbf-8f5f-8d5d590f9603\tview_item\t2018-01-26 18:52:44\t1516960363189\t아파트 매물상세\t61859\tNULL\t아파트\tNULL\t230\t230\tNULL\tNULL\tNULL\n2018-01-26\t3D420FF4-1751-4FDA-8980-D1E80B6BC7DE\tE6F8BA5A-616F-45A3-9F9E-434C28A8F2B1\tview_item\t2018-01-26 00:26:45\t1516894005\t아파트 매물상세\t132164\tNULL\t아파트\tNULL\t6299\t93499\tNULL\tNULL\tNULL\n2018-01-26\t894f8d38-2b04-42a6-beb5-dd497fc58cfc\t07a7d289-061a-4fcd-a301-1548eff196f3\tview_item\t2018-01-26 05:55:39\t1516913736983\t아파트 매물상세\t60236\tNULL\t아파트\tNULL\t0\t0\tNULL\tNULL\tNULL"
+          },
+          {
+            "type": "HTML",
+            "data": "<div class=\"result-alert alert-warning\" role=\"alert\"><button type=\"button\" class=\"close\" data-dismiss=\"alert\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;</span></button><strong>Output is truncated</strong> to 102400 bytes. Learn more about <strong>ZEPPELIN_INTERPRETER_OUTPUT_LIMIT</strong></div>"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://ip-172-31-7-149.ap-northeast-2.compute.internal:4040/jobs/job?id=65",
+              "$$hashKey": "object:1129"
+            },
+            {
+              "jobUrl": "http://ip-172-31-7-149.ap-northeast-2.compute.internal:4040/jobs/job?id=66",
+              "$$hashKey": "object:1130"
+            },
+            {
+              "jobUrl": "http://ip-172-31-7-149.ap-northeast-2.compute.internal:4040/jobs/job?id=67",
+              "$$hashKey": "object:1131"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1638011770318_2063177456",
+      "id": "paragraph_1638011770318_2063177456",
+      "dateCreated": "2021-11-27T11:16:10+0000",
+      "dateStarted": "2021-11-27T11:18:30+0000",
+      "dateFinished": "2021-11-27T11:18:30+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:325"
+    },
+    {
+      "title": "3. 저장 - 1. 파케이",
+      "text": "val danjiCountDF = sqlContext.sql(s\"\"\"\n\n    select base_date,\n           adid,\n           timestamp as base_dt,\n           building_id as danji_id\n    from logs \n    where item_category = '아파트'\n    and name = 'view_item'\n    and screen_name = '아파트 상세'\n\n\"\"\")\n\n// Parquet 형태로 s3에 저장한다. \ndanjiCountDF.write\n      .mode(\"overwrite\")\n      .format(\"parquet\")\n      .save(\"s3://fc-class/silver/danji_user_view\")\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-11-27T10:48:56+0000",
+      "progress": 98,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1637730829842_330515612",
+      "id": "20181009-063337_70848775",
+      "dateCreated": "2021-11-24T05:13:49+0000",
+      "dateStarted": "2021-11-27T10:48:56+0000",
+      "dateFinished": "2021-11-27T10:48:59+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:326"
+    },
+    {
+      "title": "4. 데이터확인",
+      "text": " val danji_viewDF = spark.read.parquet(\"s3://fc-class/silver/danji_user_view\")\n danji_viewDF.show\n\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-11-27T11:13:00+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1637730829842_1188265016",
+      "id": "20181009-094110_1971862",
+      "dateCreated": "2021-11-24T05:13:49+0000",
+      "dateStarted": "2021-11-27T10:51:08+0000",
+      "dateFinished": "2021-11-27T10:51:09+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:327"
+    },
+    {
+      "title": "4-2. Table 생성하기",
+      "text": "%sql\nCREATE EXTERNAL TABLE class.danji_user_view_silver\n(\n  base_dt timestamp, \n  adid string, \n  danji_id int\n)\nPARTITIONED BY ( \n  base_date date \n  )\nSTORED AS PARQUET\nLOCATION 's3://fc-class/hive/silver/danji_user_view'\ntblproperties (\"parquet.compress\"=\"SNAPPY\" ,\"classification\"=\"parquet\")\n\n",
+      "user": "anonymous",
+      "dateUpdated": "2021-11-27T11:06:04+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/sql",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": []
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1637730829842_243116640",
+      "id": "20190720-063821_225818706",
+      "dateCreated": "2021-11-24T05:13:49+0000",
+      "dateStarted": "2021-11-27T11:06:04+0000",
+      "dateFinished": "2021-11-27T11:06:05+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:328"
+    },
+    {
+      "title": "5. Hive SQL - 미리 Glue에 정의를 해야 한다.",
+      "text": "sqlContext.sql(s\"\"\"\n\n   insert overwrite table   class.danji_user_view_silver \n    PARTITION(base_date)  \n    select \n           timestamp as base_dt,\n           adid,\n           building_id as danji_id,\n           base_date\n    from logs \n    where item_category = '아파트'\n    and name = 'view_item'\n    and screen_name = '아파트 상세'    \n\n\"\"\")",
+      "user": "anonymous",
+      "dateUpdated": "2021-11-27T11:08:54+0000",
+      "progress": 100,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9,
+        "title": true,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "results": {
+        "code": "SUCCESS",
+        "msg": [
+          {
+            "type": "TEXT",
+            "data": "\u001b[1m\u001b[34mres29\u001b[0m: \u001b[1m\u001b[32morg.apache.spark.sql.DataFrame\u001b[0m = []\n"
+          }
+        ]
+      },
+      "apps": [],
+      "runtimeInfos": {
+        "jobUrl": {
+          "propertyName": "jobUrl",
+          "label": "SPARK JOB",
+          "tooltip": "View in Spark web UI",
+          "group": "spark",
+          "values": [
+            {
+              "jobUrl": "http://ip-172-31-7-149.ap-northeast-2.compute.internal:4040/jobs/job?id=54",
+              "$$hashKey": "object:1305"
+            }
+          ],
+          "interpreterSettingId": "spark"
+        }
+      },
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1637730829842_1805612657",
+      "id": "20181009-235256_1693762390",
+      "dateCreated": "2021-11-24T05:13:49+0000",
+      "dateStarted": "2021-11-27T11:08:54+0000",
+      "dateFinished": "2021-11-27T11:09:00+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:329"
+    },
+    {
+      "title": "6. Hive 테이블에 데이터를 이용해서 단지별 일조회수 확인",
+      "text": "%sql\n\nselect base_date\n      , danji_id\n     , count(*) as danji_view_count\nfrom class.danji_user_view_silver \ngroup by base_date\n        ,danji_id\norder by      count(*) desc    \n",
+      "user": "anonymous",
+      "dateUpdated": "2021-11-27T11:10:29+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "sql",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/sql",
+        "fontSize": 9,
+        "title": true,
+        "results": {
+          "0": {
+            "graph": {
+              "mode": "table",
+              "height": 300,
+              "optionOpen": false,
+              "setting": {
+                "table": {
+                  "tableGridState": {},
+                  "tableColumnTypeState": {
+                    "names": {
+                      "base_date": "string",
+                      "danji_id": "string",
+                      "danji_view_count": "string"
+                    },
+                    "updated": false
+                  },
+                  "tableOptionSpecHash": "[{\"name\":\"useFilter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable filter for columns\"},{\"name\":\"showPagination\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable pagination for better navigation\"},{\"name\":\"showAggregationFooter\",\"valueType\":\"boolean\",\"defaultValue\":false,\"widget\":\"checkbox\",\"description\":\"Enable a footer for displaying aggregated values\"}]",
+                  "tableOptionValue": {
+                    "useFilter": false,
+                    "showPagination": false,
+                    "showAggregationFooter": false
+                  },
+                  "updated": false,
+                  "initialized": false
+                }
+              },
+              "commonSetting": {}
+            }
+          }
+        },
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1637730829843_1456594244",
+      "id": "20181009-063835_7872596",
+      "dateCreated": "2021-11-24T05:13:49+0000",
+      "dateStarted": "2021-11-27T11:10:29+0000",
+      "dateFinished": "2021-11-27T11:10:31+0000",
+      "status": "FINISHED",
+      "$$hashKey": "object:330"
+    },
+    {
+      "user": "anonymous",
+      "dateUpdated": "2021-11-24T05:13:49+0000",
+      "progress": 0,
+      "config": {
+        "editorSetting": {
+          "language": "scala",
+          "editOnDblClick": false,
+          "completionKey": "TAB",
+          "completionSupport": true
+        },
+        "colWidth": 12,
+        "editorMode": "ace/mode/scala",
+        "fontSize": 9,
+        "results": {},
+        "enabled": true
+      },
+      "settings": {
+        "params": {},
+        "forms": {}
+      },
+      "apps": [],
+      "runtimeInfos": {},
+      "progressUpdateIntervalMs": 500,
+      "jobName": "paragraph_1637730829844_99888975",
+      "id": "20181009-112434_452898978",
+      "dateCreated": "2021-11-24T05:13:49+0000",
+      "status": "READY",
+      "$$hashKey": "object:333"
+    }
+  ],
+  "name": "4-1.단지별 사용자 조회수",
+  "id": "2GQ596Q3C",
+  "defaultInterpreterGroup": "spark",
+  "version": "0.9.0",
+  "noteParams": {},
+  "noteForms": {},
+  "angularObjects": {},
+  "config": {
+    "isZeppelinNotebookCronEnable": false,
+    "looknfeel": "default",
+    "personalizedMode": "false"
+  },
+  "info": {},
+  "path": "/4-1.단지별 사용자 조회수"
+}
